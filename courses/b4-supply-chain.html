@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Builder session 4 of 8. Your pipeline is mostly other people's code, and it runs on a CI runner that holds the ETL service key. A package pulled at build time is a path to that key, and the key is a path to the warehouse. Pinning and verifying dependencies takes Ironwood's paths from four to three; a runner that holds nothing the build needs is why the remaining doors stay small.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Supply chain in the data stack - learn cyber security with phoebe">
+<meta property="og:description" content="Builder session 4 of 8. Code you did not write, running with your key. Pin, verify, minimise, separate.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/b4-supply-chain.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Supply chain in the data stack - learn cyber security with phoebe">
+<meta name="twitter:description" content="Packages, dbt packages, connectors, base images, and the runner that installs them with your key. Pinning: four paths to three.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Builder session 4 · Supply chain in the data stack - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Builder session 4 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Builder session 4 of 8</div>
+    <h1>Supply chain <span class="accent">in the data stack</span></h1>
+    <p class="sub">Count the lines of code in your pipeline that your team wrote, then count the lines that run. The second number is a hundred times the first: Python packages, dbt packages, connectors, orchestrator plugins, container base images. All of it is installed by a CI runner, and the runner holds the ETL service key in its environment so the pipeline can run. A package that arrives changed at build time runs on that runner, with that key. Tonight is the door that looks like normal engineering, the control that closes it on Ironwood's graph, and the design rule that keeps the runner too poor to be worth robbing.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Platform and analytics engineers</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-20 · Code you did not write, running with your key</span>
+      <span class="a3" style="flex:4">20-40 · Build-along: pin, verify, minimise</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits on the ladder</h2>
+    </div>
+    <p class="lede">Four paths remain to Ironwood's customers table after MFA, key rotation and the private bucket. Tonight closes one: the path that starts at a package registry, lands on the CI runner, reads the ETL service key out of the runner's environment and authenticates to the warehouse as the pipeline. Pinning and verifying dependencies takes the count from <strong>four to three</strong>. The three that remain are the two insider paths and the Friday admin grant, none of which is a door in the engineering sense. Tonight is the last door.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A lockfile for the pipeline's dependencies, committed, with hash verification on every install so a build cannot silently pull a different artifact. A list of every secret the CI runner's environment holds and the ones the build step does not need removed. Build and deploy split into two steps, with only deploy holding a credential, and that one short-lived. And the inventory file's "closed by" column filled for the CI runner edge.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why this door looks like normal engineering<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A phished login leaves a login. A public bucket leaves a URL in an index. A supply-chain compromise leaves a green build. The runner did exactly what it does every night: resolved the dependency list, downloaded what the registry offered, installed it, ran the pipeline. Every step is the legitimate process. The only thing that changed is that one of the packages was not the one the team reviewed, and nothing in a standard build checks that.</p>
+        <p>That is why the control is not a scanner and not a firewall. It is a written record of exactly which artifact, by hash, the team agreed to run, and an install step that refuses anything else. The build turns red on the night the artifact changes, which is the night it needed to.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's pipeline declared 31 direct dependencies. The resolved install pulled 214 packages. Nobody on the team could name more than a dozen, and the requirements file said <code class="mono">&gt;=</code> on every line, so the 214 could be a different 214 tomorrow. The runner that installed them held the ETL key, the orchestrator token and a cloud deploy role, because it had always been simpler to give the runner everything.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The vocabulary for the supply-chain lane<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Dependency</strong> - code your pipeline runs that your team did not write. Direct if you asked for it, transitive if something you asked for asked for it. Transitive dependencies outnumber direct ones by five to ten to one on a typical data pipeline.</li>
+          <li><strong>Lockfile</strong> - the fully resolved list of every package and its exact version, committed next to the code. A requirements file says what you want; a lockfile says what you got.</li>
+          <li><strong>Hash verification</strong> - the install step checks each downloaded artifact against a digest recorded in the lockfile and refuses a mismatch. Same name, same version, different bytes: refused.</li>
+          <li><strong>CI runner</strong> - the machine that installs dependencies and runs the build. Whatever is in its environment is available to every package it installs. That is the whole problem in one sentence.</li>
+          <li><strong>Build step</strong> - produce and test an artifact. <strong>Deploy step</strong> - put the artifact where it runs and give it what it needs to run. Only one of these needs a warehouse credential, and it is not the one that installs code from the internet.</li>
+          <li><strong>Short-lived credential</strong> - one that is issued for the run and expires in minutes. A stolen short-lived credential is a door that closes itself.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the supply-chain surface of a data stack and the Ironwood path through the runner</span>
+      <h2>Your pipeline is mostly other people's code</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">The supply-chain surface of a data stack has five lanes, and they share one property: each is code that arrives from outside and runs on a machine that holds a credential. The path is the same in every lane. The registry is the door, the runner is what it yields, the key is what the runner holds.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The supply-chain path: a package registry on the internet, a package pulled at build time onto the CI runner, the ETL service key held in the runner's environment, the warehouse, and the customers table. A pin-and-verify gate closes the edge from the registry to the runner, taking paths from four to three. A panel under the runner lists what its environment holds tonight and marks the ETL key as belonging to deploy, not build.">
+        <style>
+          .b4aT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .b4aH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .b4aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .b4aM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b4aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b4aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b4aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="b4aRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <text class="b4aM" x="14" y="22">start: the internet, via a registry</text>
+        <text class="b4aM" x="220" y="22">what runs the code</text>
+        <text class="b4aM" x="420" y="22">what it yields</text>
+        <text class="b4aM" x="600" y="22">the estate</text>
+        <text class="b4aM" x="770" y="22">the prize</text>
+
+        <rect x="14" y="84" width="150" height="34" rx="8" fill="#431407"></rect>
+        <text class="b4aT" x="89" y="106" text-anchor="middle">package registry</text>
+        <text class="b4aM" x="14" y="136">python, dbt, connector,</text>
+        <text class="b4aM" x="14" y="150">plugin, base image</text>
+
+        <rect x="220" y="84" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b4aT" x="300" y="106" text-anchor="middle">CI runner</text>
+        <rect x="420" y="86" width="140" height="30" rx="7" fill="#FDBA74"></rect>
+        <text class="b4aH" x="490" y="106" text-anchor="middle">ETL service key</text>
+        <rect x="600" y="84" width="130" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b4aT" x="665" y="106" text-anchor="middle">Warehouse</text>
+        <rect x="770" y="84" width="96" height="34" rx="8" fill="#431407"></rect>
+        <text class="b4aT" x="818" y="106" text-anchor="middle">customers</text>
+
+        <line x1="166" y1="101" x2="216" y2="101" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b4aRd)"></line>
+        <text class="b4aR" x="150" y="74">a changed package, pulled at build</text>
+        <line x1="382" y1="101" x2="416" y2="101" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b4aAr)"></line>
+        <line x1="562" y1="101" x2="596" y2="101" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b4aAr)"></line>
+        <line x1="732" y1="101" x2="766" y2="101" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b4aAr)"></line>
+        <text class="b4aM" x="384" y="132">env holds it</text>
+        <text class="b4aM" x="566" y="132">authenticates</text>
+        <text class="b4aM" x="736" y="132">SELECT as ETL</text>
+
+        <rect x="187" y="80" width="8" height="42" rx="2" fill="#431407"></rect>
+        <line x1="191" y1="124" x2="191" y2="158" stroke="#431407" stroke-width="1.5"></line>
+        <rect x="110" y="160" width="170" height="30" rx="7" fill="#431407"></rect>
+        <text class="b4aT" x="195" y="180" text-anchor="middle">pin and verify: 4 to 3</text>
+
+        <rect x="300" y="170" width="380" height="118" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b4aH" x="312" y="190">The runner's environment, tonight</text>
+        <text class="b4aB" x="312" y="212">ETL service key</text>
+        <text class="b4aR" x="470" y="212">deploy needs it, build does not</text>
+        <text class="b4aB" x="312" y="232">orchestrator admin token</text>
+        <text class="b4aR" x="470" y="232">nothing in the build needs it</text>
+        <text class="b4aB" x="312" y="252">registry read token</text>
+        <text class="b4aM" x="470" y="252">the build needs this one</text>
+        <text class="b4aB" x="312" y="272">warehouse URL and role name</text>
+        <text class="b4aM" x="470" y="272">not a secret</text>
+
+        <rect x="14" y="330" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b4aN" x="38" y="342">Whatever the runner holds, every package it installs can read. Hold nothing the build does not need.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - registry, runner, key, warehouse, table, and the gate that closes the first edge.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The five lanes of the supply-chain surface<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Lane</th><th>What arrives</th><th>Where it runs</th><th>What it can reach there</th></tr></thead>
+          <tbody>
+            <tr><td>Python packages</td><td>The pipeline's libraries and their transitive tree</td><td>CI runner, orchestrator workers</td><td>Everything in the process environment</td></tr>
+            <tr><td>dbt packages</td><td>Macros and models pulled by the packages file</td><td>Wherever dbt runs, with the warehouse profile</td><td>The warehouse, as the transformation role</td></tr>
+            <tr><td>Connectors</td><td>Source and destination plugins, often binaries</td><td>Ingestion workers</td><td>Source credentials and the landing zone</td></tr>
+            <tr><td>Orchestrator plugins</td><td>Providers, operators, hooks</td><td>The scheduler and every worker</td><td>Every connection the orchestrator stores</td></tr>
+            <tr><td>Container base images</td><td>The operating system under all of the above</td><td>Everywhere</td><td>Everything, before your code starts</td></tr>
+          </tbody>
+        </table>
+        <p>The fourth column is the one that matters. In every lane the answer is "whatever that machine holds", which is why the control has two halves: make sure the code that arrives is the code you reviewed, and make sure the machine it arrives on holds as little as possible in case the first half fails.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The Ironwood path, edge by edge<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>Internet to CI runner</strong>: a package the build pulls arrives changed. Not a new package the team added; a version of one they already trusted, republished with something extra. The build installs it because the requirements file says any version at or above a floor. <strong>CI runner to ETL service key</strong>: the runner's environment holds the key, so anything running on the runner can read it. This edge has no control that closes it, because the runner holds the key legitimately; the pipeline needs it. <strong>Key to warehouse</strong>: the key authenticates. <strong>Warehouse to customers</strong>: a SELECT as the ETL role, which reads every table because it loads every table.</p>
+        <p>Session 2 rotated the key, and the rotation did nothing to this path: the runner got the new key, because the runner is a legitimate holder. The graph shows the distinction. Rotation closed the copy in git history and left the copy in the runner's environment, which is the copy this path uses. Pinning closes the first edge, and the count moves from four to three.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's nightly build ran at 02:00. The pipeline's query history shows the ETL role reading customers every night at 02:14, as it should, to build the marketing extract. A malicious read at 02:15 by the same role from the same runner would be one more line in the same log, indistinguishable by identity. Session 5 is about what would distinguish it: the volume and the destination. Tonight is about the package never landing.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the runner's environment is the real finding<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Pinning takes the path count from four to three, and the honest observation is that it does so by closing one door out of a class that keeps growing. Registries get new packages every day; a team adds a dependency every sprint; the lockfile is regenerated every time somebody upgrades. Each regeneration is a moment when a changed artifact can enter, reviewed or not. The control holds as long as the review holds.</p>
+        <p>So the second half of the design is not optional. A runner that holds the ETL key, an orchestrator admin token and a cloud deploy role is a runner where a single missed review costs the estate. A runner that holds a registry read token and nothing else is a runner where the same miss costs a build. The environment is what decides which of those you are running, and it is a list you can print tonight.</p>
+        <ul>
+          <li><strong>Every secret on the runner is reachable by every package.</strong> Not by a clever package; by any package. Environment variables are read with one line.</li>
+          <li><strong>A runner that needs a warehouse key to run tests is a design smell.</strong> Tests run against a fixture. If they cannot, the pipeline is not testable, and that is the finding.</li>
+          <li><strong>The credential belongs to the step that loads.</strong> And that step should be issued the credential for the run, not hold it between runs.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers pinning, hash verification, minimising the runner, splitting build from deploy, and the honest limit</span>
+      <h2>Pin, verify, minimise, and separate</h2>
+      <span class="tag concept">8 min live</span>
+    </div>
+    <p class="lede">Four moves, in the order that pays off soonest. <strong>Pin</strong> what runs. <strong>Verify</strong> that what arrives is what was pinned. <strong>Minimise</strong> what the machine that installs it holds. <strong>Separate</strong> the step that installs from the step that needs the credential, and make the credential short-lived.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Build and deploy as two separate boxes. The build step installs from the lockfile with hashes verified, runs tests against a fixture, produces an artifact and its digest, and holds only a registry read token. An arrow carries the artifact by digest to the deploy step, which requests a short-lived credential from an issuer, loads to the warehouse as the ETL role, and holds the credential only for the run.">
+        <style>
+          .b4bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .b4bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b4bB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .b4bM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b4bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b4bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b4bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <rect x="40" y="40" width="360" height="34" rx="8" fill="#431407"></rect>
+        <text class="b4bT" x="220" y="62" text-anchor="middle">Build step: installs code from the internet</text>
+        <rect x="40" y="74" width="360" height="176" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b4bB" x="56" y="100">1  install from the lockfile, every hash verified</text>
+        <text class="b4bB" x="56" y="122">2  run tests against a fixture, never the warehouse</text>
+        <text class="b4bB" x="56" y="144">3  produce the artifact and record its digest</text>
+        <text class="b4bB" x="56" y="166">4  publish the artifact to the internal store</text>
+        <text class="b4bH" x="56" y="200">holds: a registry read token</text>
+        <text class="b4bR" x="56" y="222">holds no warehouse credential, ever</text>
+
+        <line x1="402" y1="150" x2="476" y2="150" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b4bAr)"></line>
+        <text class="b4bM" x="439" y="140" text-anchor="middle">artifact</text>
+        <text class="b4bM" x="439" y="168" text-anchor="middle">by digest</text>
+
+        <rect x="480" y="40" width="360" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b4bT" x="660" y="62" text-anchor="middle">Deploy step: touches the warehouse</text>
+        <rect x="480" y="74" width="360" height="176" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b4bB" x="496" y="100">1  fetch the artifact by digest, refuse a mismatch</text>
+        <text class="b4bB" x="496" y="122">2  request a credential for this run only</text>
+        <text class="b4bB" x="496" y="144">3  load to the warehouse as the ETL role</text>
+        <text class="b4bB" x="496" y="166">4  the credential expires minutes later</text>
+        <text class="b4bH" x="496" y="200">holds: one credential, for one run</text>
+        <text class="b4bM" x="496" y="222">installs nothing from the internet</text>
+
+        <rect x="540" y="276" width="240" height="28" rx="7" fill="#FDBA74"></rect>
+        <text class="b4bH" x="660" y="295" text-anchor="middle">short-lived credential issuer</text>
+        <line x1="660" y1="274" x2="660" y2="256" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b4bAr)"></line>
+        <text class="b4bM" x="676" y="266">expires in minutes</text>
+
+        <rect x="40" y="316" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b4bN" x="64" y="328">A build that needs a warehouse key to run tests is a design smell. Split the steps; only deploy holds one.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - two steps, one credential, and it lives in the step that never installs code.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Pin with a lockfile, verify against recorded hashes<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A requirements file with version floors is a wish. The lockfile is the fully resolved tree, every package at an exact version, with the digest of the artifact that was downloaded when the lock was made. It is committed next to the code, so the version of the pipeline in git names the exact bytes it runs.</p>
+        <p>Verification is the half that makes the lockfile a control rather than documentation. With hash checking on, the installer compares each downloaded artifact to the digest in the lockfile and refuses a mismatch. Same package name, same version number, different bytes: the build fails. That failure is the whole point. A republished artifact under an existing version, a registry that served something else, a mirror that was tampered with: all of them are the same red build.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's first locked build failed on three packages. Two were pinned to versions that no longer existed on the registry, which meant the previous nightly builds had been silently resolving to something newer for months. The third had a hash mismatch against a version the team had never upgraded, and the investigation of that one is the story the platform team tells new hires.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Minimise what the runner holds, and separate build from deploy<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Print the runner's environment. Every secret on the list is reachable by every one of the 214 packages. Then ask of each one: does the step that installs code need this to do its job? A registry read token, yes. A warehouse key, no; the build does not query the warehouse, it builds an artifact and tests it against a fixture. An orchestrator admin token, no; nothing in a build needs to administer the scheduler. A cloud deploy role, no; that is the deploy step's job.</p>
+        <p>The separation follows from the list. The <strong>build step</strong> installs, tests, produces an artifact and its digest, and holds a read token. The <strong>deploy step</strong> fetches the artifact by digest, requests a short-lived credential from an issuer that trusts the pipeline's identity, loads to the warehouse, and lets the credential expire. It installs nothing from the internet, so a changed package never runs where a credential is. The credential is issued for minutes, so even a copy of it is a door that closes itself.</p>
+        <p>The cost is a second job in the pipeline and an issuer to configure. Ironwood's split took a day and a half, most of it discovering which tests had quietly been hitting the warehouse.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Lockfile diffs are code review, and the lane teams forget<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A lockfile changes when somebody upgrades, and an upgrade is the moment a changed artifact can enter with a reviewer's approval. So the lockfile diff is part of the pull request, read like code. For each version change: is this a version the maintainer published, does the changelog account for it, did the transitive tree grow, and by what. A diff that adds forty packages to upgrade one is a question, not a merge.</p>
+        <p>The lane teams forget is the one that is not "code" in the repository's sense. dbt packages are declared in a packages file and pulled at run time by the dbt process, which holds the warehouse profile. Connectors are configured in a UI and updated by the platform. Orchestrator providers arrive with the orchestrator image. None of these appear in the Python lockfile, and each runs with a credential. Every one of them needs the same treatment: an exact version written down, a check that the version running is the version written, and a diff when it changes.</p>
+        <ul>
+          <li><strong>dbt packages</strong>: pin to an exact version or a commit in the packages file, and diff it in review like the lockfile.</li>
+          <li><strong>Connectors</strong>: record the version running against each source; the platform's own changelog is the diff.</li>
+          <li><strong>Base images</strong>: pin by digest, not by tag. A tag is a name that can move; a digest is the bytes.</li>
+          <li><strong>Orchestrator plugins</strong>: they arrive with the image, so pinning the image by digest pins them.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The honest limit of pinning<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Pinning and verification defend against a changed artifact: a package that was one thing when the team reviewed it and another thing when the build pulled it. They do not defend against a maintainer who was malicious from the first version, or a package that was fine for three years and whose maintainer account changed hands last month with the code changing in the release the team then reviewed and pinned. Review catches some of that. Nothing catches all of it.</p>
+        <p>Which is why the runner still holds as little as possible even after every dependency is pinned and verified. The first half of the control makes the door hard to open; the second half makes the room behind it nearly empty. On the bench, pinning is the 4 to 3 rung. Minimising the runner does not move the count at all, and it is the reason the count stays at three when a pin is wrong.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Pin, verify, minimise</h2>
+      <span class="tag demo">★ 20 min · everyone builds</span>
+    </div>
+    <p class="lede">Every command runs against your own pipeline's repository and your own CI configuration. The output is a committed lockfile with hash verification on, a runner environment shorter than it was, a build step that holds no warehouse credential, and a filled "closed by" cell for the CI runner edge.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Produce the lockfile for the pipeline's dependencies and commit it.</strong> Resolve the full tree from the requirements file with digests recorded for every artifact. The exact tool differs by ecosystem and the output does not: one file, every package at an exact version, a hash per artifact, committed next to the code it locks.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · lock, then commit the lock</span>
+# resolve the full dependency tree with a digest for every artifact; the resolver differs by ecosystem
+&lt;resolver&gt; lock --generate-hashes -o requirements.lock requirements.in
+# read the size of what you just agreed to run
+grep -c '==' requirements.lock
+git add requirements.lock &amp;&amp; git commit -m "lock pipeline dependencies with hashes"
+        </div>
+        <p>Ironwood's count was 214 from 31 direct entries. The commit message is the point: from this commit on, the pipeline's git history names the exact bytes each version ran.</p>
+      </div>
+      <div class="step">
+        <p><strong>Enable hash verification on install, in CI and nowhere else first.</strong> The install step reads the lockfile and requires every artifact to match its recorded digest. Run it in CI before changing developer machines, so the first mismatch is a red build rather than a confused colleague.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · the install step, verifying</span>
+# in the CI build job: install only from the lock, refuse any artifact whose digest does not match
+&lt;installer&gt; install --require-hashes -r requirements.lock
+# a mismatch fails the build with the package name and both digests; that failure is the control working
+        </div>
+        <p>Expect the first run to fail. Ironwood's failed on three packages, and every one of the three was a finding about the previous year's builds, not about the lockfile.</p>
+      </div>
+      <div class="step">
+        <p><strong>List every secret the CI runner's environment holds, and remove the ones the build step does not need.</strong> Print the variable names, never the values. For each name ask: does installing and testing code need this? Then remove every "no" from the build job's configuration. The list of names goes into the inventory's credential lane; the values go nowhere.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · names only, never values</span>
+# in the build job, print the NAMES of the environment variables, never their values
+env | cut -d= -f1 | sort
+# Ironwood's build job, before:
+#   ETL_SERVICE_KEY          -> deploy needs it, build does not: remove from build
+#   ORCHESTRATOR_ADMIN_TOKEN -> nothing in a build needs it: remove entirely, rotate it
+#   CLOUD_DEPLOY_ROLE        -> deploy needs it, build does not: remove from build
+#   REGISTRY_READ_TOKEN      -> the build needs it: keep
+#   WAREHOUSE_URL, ETL_ROLE  -> not secrets: keep
+        </div>
+        <p>A secret that was on the runner and is now removed was readable by every package for as long as it was there. Rotate it after removing it, by the five-step sequence from session 2, and write the rotation date next to it.</p>
+      </div>
+      <div class="step">
+        <p><strong>Split build from deploy so that only deploy holds a credential.</strong> Two jobs in the pipeline configuration. Build installs from the lock, runs tests against a fixture, publishes the artifact and its digest. Deploy fetches by digest, requests a short-lived credential from the issuer, loads to the warehouse, and exits. The deploy job installs nothing.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · two jobs, one credential</span>
+# pipeline configuration, shape only; the keys differ by CI system
+jobs:
+  build:
+    env: [REGISTRY_READ_TOKEN]                 # the only secret the build can see
+    steps:
+      - &lt;installer&gt; install --require-hashes -r requirements.lock
+      - run tests against fixtures/            # never against the warehouse
+      - build artifact, write artifact.digest
+      - publish artifact to the internal store
+  deploy:
+    needs: build
+    env: []                                    # nothing long-lived; the credential is requested below
+    steps:
+      - fetch artifact by digest from the internal store, refuse a mismatch
+      - request a short-lived warehouse credential from the issuer for this run (expires in minutes)
+      - load to the warehouse as the ETL role
+      # the credential expires on its own; there is nothing to clean up
+        </div>
+        <p>The tests are where the split gets hard. Ironwood found six tests that had been reading the warehouse for years because it was easier than building a fixture. Building the fixture was a day; those six tests were the day.</p>
+      </div>
+      <div class="step">
+        <p><strong>Diff last month's lockfile against today's and read every version change.</strong> The lockfile is now in git, so its history is readable. For each changed line: who changed it, in which pull request, and did the transitive tree grow. Make this a standing part of code review for any pull request that touches the lock.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · the lock's own history</span>
+# every version change in the lock over the last month, with the commit that made it
+git log --since='1 month ago' -p -- requirements.lock | grep -E '^[-+][a-zA-Z0-9_.-]+==' | sort | uniq -c
+# the pull requests that changed the lock, so each change has a reviewer's name on it
+git log --since='1 month ago' --format='%h %ad %an %s' --date=short -- requirements.lock
+        </div>
+        <p>A lock that changed and nobody can say why is the diff-review finding. A lock that has not changed in a year is a different finding: the pipeline is running twelve months of unpatched dependencies, and both are worth writing down.</p>
+      </div>
+      <div class="step">
+        <p><strong>Update the inventory file's "closed by" column for the CI runner edge, with the date.</strong> One edge closes tonight: internet to CI runner, closed by pinned and verified dependencies. The runner-to-key edge stays open, because the deploy step holds a credential legitimately; write the minimisation and the short-lived credential in its cell so the reader knows why the edge is small rather than gone.</p>
+        <div class="prompt-box good">
+          <span class="label">★ The inventory file after tonight</span>
+# from            -> to               | the move                                   | closed by                                                    | seen by
+internet          -> ci_runner        | malicious package in the build             | pinned deps, hashes verified in CI, 2026-09-08              | red build on mismatch
+ci_runner         -> svc_key          | runner environment holds the key           | (cannot: deploy needs it) build holds none; deploy credential short-lived, 2026-09-08 | query logging (session 7)
+svc_key           -> warehouse        | key authenticates from anywhere            | network policy NET_ETL, pipeline range only (session 3)     | login history
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>The lockfile is a control only while somebody reads its diffs.</strong> Verification stops the artifact changing under a pinned version. It cannot stop a reviewer approving a pull request that pins a bad version. The diff review in step 5 is the human half, and a pipeline where the lock is regenerated by a bot and merged without a reader has the first half of the control and not the second.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 5</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Lock every pipeline that deploys to the warehouse, with hashes, verification on in CI. Count the first-run failures across all of them and write the count down; each one is a month somewhere in the past when a build ran something nobody reviewed.</li>
+      <li>Print the environment variable names on every runner and worker that installs code. Remove every secret the install step does not need. Rotate each one you removed.</li>
+      <li>Walk the four lanes that are not the Python lockfile: dbt packages, connectors, base images, orchestrator plugins. For each, write down the exact version running and whether anything checks it. A blank is the finding.</li>
+      <li>Find every test that touches the warehouse. Count them. That count is the size of the build-deploy split, and it goes to whoever plans the next sprint as a number, not as a complaint.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Session 2 rotated the ETL service key. Why did rotation not close the CI runner path, which also uses that key?</p>
+      <button class="qopt" type="button">A · Because the runner caches the old key and rotation does not reach the cache</button>
+      <button class="qopt" type="button">B · Because the CI runner authenticates with a token, not the key</button>
+      <button class="qopt" type="button">C · Because the runner is a legitimate holder: it received the new key, so a changed package on the runner still reaches a valid credential</button>
+      <p class="qwhy">Rotation closes a leaked copy. The runner holds the current copy because the pipeline needs it. The path is closed at its first edge instead, by pinning and verifying what lands on the runner, and made small by the runner holding as little as possible.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">Hash verification is on and every dependency is pinned. What does that not defend against, and what is the answer to it?</p>
+      <button class="qopt" type="button">A · A package that was malicious from its first version, or whose maintainer turned before the version the team reviewed and pinned; the answer is a runner that holds almost nothing</button>
+      <button class="qopt" type="button">B · A registry that serves a different artifact under the same version; the answer is a mirror</button>
+      <button class="qopt" type="button">C · Nothing; pinning with hashes is a complete control for the supply-chain lane</button>
+      <p class="qwhy">Pinning defends against a changed artifact. It cannot tell a trusted version from a malicious one the team reviewed and approved. That gap is why the second half of the design exists: the room behind the door is nearly empty.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">A team's CI runner needs the warehouse key to run its test suite. What is that a sign of?</p>
+      <button class="qopt" type="button">A · Good practice: tests should run against real data to be meaningful</button>
+      <button class="qopt" type="button">B · A design smell: tests belong against a fixture, and the step that installs code from the internet should hold no warehouse credential; split build from deploy and give deploy a short-lived one</button>
+      <button class="qopt" type="button">C · A network problem: the runner should reach the warehouse through the allowlist instead</button>
+      <p class="qwhy">Every package the build installs can read every secret on the runner. A build that needs a warehouse key has put the credential in the one place code from outside runs. Ironwood's split found six such tests, and they were the whole cost of the split.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Protect function, platform security and supply-chain integrity</span>
+        <span class="note">Safeguards to manage cybersecurity risk are used: verified dependencies, minimised runner environments, short-lived deploy credentials.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">The supply-chain door on the attack graph</span>
+        <span class="note">Packages, dbt packages, connectors, base images, orchestrator plugins; the CI runner path, and pinning as the 4 to 3 rung.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Dependency pinning and lockfile verification</span>
+        <span class="note">Taught as a pattern with its honest limit: a changed artifact is caught, a maintainer malicious from version one is not. No vendor product claims.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Key rotation and the service-account pattern</span>
+        <span class="note">Session 2. Used tonight to rotate every secret removed from the runner.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Infrastructure as code and secrets in CI</span>
+        <span class="note">The dataops course owns the practice. IaC appears here only as a supply-chain surface: modules and providers are dependencies too.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">How a malicious package is built or distributed</span>
+        <span class="note">Not covered by design. The page stops at the door, the control that closes it, and the environment that keeps it small.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 4 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Five lanes</b><span>Python packages, dbt packages, connectors, orchestrator plugins, base images. Each runs where a credential is.</span></div>
+      <div class="cheat-item"><b>Pinning: 4 to 3</b><span>Closes internet to CI runner. The last engineering door on Ironwood's graph; what remains is insiders and the Friday grant.</span></div>
+      <div class="cheat-item"><b>Rotation did not close this</b><span>The runner is a legitimate holder and got the new key. Pin the first edge instead.</span></div>
+      <div class="cheat-item"><b>Lockfile plus hashes</b><span>A requirements file is a wish. The lock names the bytes; verification refuses anything else. Red build is the control working.</span></div>
+      <div class="cheat-item"><b>Print the env, names only</b><span>Every secret on the runner is readable by every package. Remove what the build does not need, then rotate it.</span></div>
+      <div class="cheat-item"><b>Split build from deploy</b><span>Build installs and tests against a fixture, holds a read token. Deploy fetches by digest, gets a short-lived credential, loads, exits.</span></div>
+      <div class="cheat-item"><b>Lock diffs are code review</b><span>Every version change has a reviewer's name. A bot-merged lock has half the control.</span></div>
+      <div class="cheat-item"><b>The honest limit</b><span>Pinning catches a changed artifact, not a maintainer malicious from version one. So the room behind the door stays empty.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Builder session 4 of 8 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="b3-misconfiguration.html">← Builder session 3 · Misconfiguration</a>
+      <a href="b5-exfiltration-detection.html">Builder session 5 · Exfiltration detection →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

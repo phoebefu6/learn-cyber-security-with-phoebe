@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Builder session 6 of 8. Time travel, snapshots and retention windows belong to the warehouse account, so whoever holds the admin login can drop the tables and purge the recovery window in one sitting. One immutable copy in a separate account, one timed restore drill, and recoverable tables go from 0 to 12 with the path count unchanged.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Destructive events - learn cyber security with phoebe">
+<meta property="og:description" content="Builder session 6 of 8. A copy the same account can delete is a copy, not a backup. Immutable, separate, restore-tested.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/b6-destructive-events.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Destructive events - learn cyber security with phoebe">
+<meta name="twitter:description" content="Time travel goes with the account. Recoverable tables 0 to 12, paths unchanged.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Builder session 6 · Destructive events - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Builder session 6 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Builder session 6 of 8</div>
+    <h1>Destructive <span class="accent">events</span></h1>
+    <p class="sub">Everything so far has been about the customers table being read. Tonight it is about the table being gone. Time travel, snapshots and retention windows are features of the warehouse account, and whoever holds the admin login holds them too: drop the twelve tables, purge the recovery window, and there is nothing left to restore from before the ransom note arrives. On Ironwood's bench, recoverable tables read zero of twelve at every rung, including the one where every prevention control is on. You will build the one thing that moves that number: a nightly copy in an account the admin does not hold, locked so nobody can delete it before its retention ends, and restored once, timed, to prove it is real.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Platform and analytics engineers</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-20 · What the admin login can destroy</span>
+      <span class="a3" style="flex:4">20-40 · Build-along: one immutable copy, one restore drill</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where session 6 sits on the ladder</h2>
+    </div>
+    <p class="lede">Five sessions have taken Ironwood from nine paths to three, and session 5 made all three visible. The third number on the bench has not moved once: <strong>recoverable tables, 0 of 12</strong>, at nothing on, at MFA, at rotation, at the private bucket, at pinned dependencies, at logging. Tonight's control, <strong>immutable, restore-tested backups</strong>, takes it to 12 with the path count still at three. It is the second rung on the ladder that moves no headline number and changes everything about Monday.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A nightly export of the crown jewels to a bucket in an account your warehouse admin cannot log in to, with object lock or its equivalent so the copy cannot be deleted before its retention ends. Proof, from the admin credential itself, that the delete is refused. One restore into a scratch schema, timed and dated. And the "closed by" column of your inventory file filled in for the one edge that leads to the backups.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why every prevention control leaves this number at zero<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>MFA stops the admin login being phished. It does not change what the admin login can do once somebody holds it, whether that is an attacker who got past MFA, a contractor whose access outlived the contract, or the admin themselves on a bad day. Prevention shrinks the number of ways to the admin login; it never shrinks what the login reaches. And on Ironwood's graph the admin login reaches the backups, because the backups are the account's own time travel and snapshots.</p>
+        <p>That is why the bench shows recoverable at zero all the way up to the logging rung, and why the "all prevention, no detection" over-correction still shows twelve: it includes immutable backups. Recovery is a property of where the copy lives and who can delete it, not of how hard the front door is to open.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's backup answer on the security questionnaire read "warehouse time travel, 7 days, plus weekly snapshots". Both were held by the same account that held the tables. A phished admin credential, used once, could have dropped the twelve tables and reduced the retention window to zero in the same session. Nothing on the questionnaire was false. Nothing on it was a backup either.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The vocabulary for tonight<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Time travel</strong> - the warehouse's ability to query or restore a table as it was at an earlier point inside a retention window. Superb for undoing a mistake. Held by the account.</li>
+          <li><strong>Snapshot</strong> - a point-in-time copy of a table or database inside the same platform. Also held by the account, also subject to the account's retention settings.</li>
+          <li><strong>Retention window</strong> - how far back time travel or snapshots reach. An account setting. Whoever can change the setting can shorten it to nothing.</li>
+          <li><strong>Immutability, object lock</strong> - a storage setting that makes an object undeletable and unmodifiable until its retention period ends, by anyone, including the account's own administrators. The cloud providers each name it differently; the property is the same.</li>
+          <li><strong>Separate account</strong> - a second cloud account or project whose credentials the warehouse administrator does not hold. The copy lives there.</li>
+          <li><strong>Restore drill</strong> - actually restoring a copy into a scratch location, on a schedule, and timing it. The only proof a backup exists.</li>
+          <li><strong>Recoverable</strong> - the bench's third number: whether an attacker who reaches the admin login can also destroy the copy you would restore from. Twelve tables, all or nothing.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers what the admin login reaches, the ransomware pattern on data, and the canon 0 to 12</span>
+      <h2>Time travel goes with the account</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">The professional rule is short: <strong>a copy the same account can delete is a copy, not a backup.</strong> Time travel, snapshots and retention windows are excellent tools for undoing your own mistakes and useless against anyone who holds the admin login, because the login that can drop the table can also purge the window that would have brought it back.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two estates side by side. Left: the admin login reaches the warehouse of twelve tables and also its time travel and snapshots, so a drop and a purge in one sitting leave zero recoverable tables. Right: the same admin login reaches the warehouse, but an object-locked nightly copy sits in a separate account it cannot log in to, so twelve tables are recoverable.">
+        <style>
+          .b6aT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .b6aH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .b6aK { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b6aM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b6aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b6aR { font: 800 10px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b6aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="b6aRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <rect x="14" y="40" width="410" height="280" rx="12" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b6aK" x="30" y="66">One account holds everything</text>
+
+        <rect x="40" y="90" width="130" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="b6aH" x="105" y="112" text-anchor="middle">admin login</text>
+
+        <rect x="245" y="90" width="150" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b6aT" x="320" y="112" text-anchor="middle">warehouse, 12 tables</text>
+        <line x1="172" y1="105" x2="241" y2="105" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b6aRd)"></line>
+        <text class="b6aR" x="206" y="84" text-anchor="middle">DROP</text>
+
+        <rect x="245" y="170" width="150" height="34" rx="8" fill="#FED7AA"></rect>
+        <text class="b6aH" x="320" y="192" text-anchor="middle">time travel, snapshots</text>
+        <line x1="172" y1="112" x2="241" y2="185" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b6aRd)"></line>
+        <text class="b6aR" x="150" y="176">purge retention</text>
+        <text class="b6aM" x="245" y="226">held by the same account,</text>
+        <text class="b6aM" x="245" y="240">gone in the same sitting</text>
+
+        <rect x="40" y="272" width="180" height="34" rx="8" fill="#991B1B"></rect>
+        <text class="b6aT" x="130" y="294" text-anchor="middle">recoverable 0 of 12</text>
+
+        <rect x="456" y="40" width="410" height="280" rx="12" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b6aK" x="472" y="66">A copy the login cannot reach</text>
+
+        <rect x="482" y="90" width="130" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="b6aH" x="547" y="112" text-anchor="middle">admin login</text>
+
+        <rect x="690" y="90" width="150" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b6aT" x="765" y="112" text-anchor="middle">warehouse, 12 tables</text>
+        <line x1="614" y1="105" x2="686" y2="105" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b6aRd)"></line>
+        <text class="b6aR" x="650" y="84" text-anchor="middle">DROP still works</text>
+
+        <rect x="600" y="160" width="250" height="110" rx="10" fill="#FFF7ED" stroke="#7C2D12" stroke-dasharray="5 4"></rect>
+        <text class="b6aM" x="612" y="178">separate account, no admin login here</text>
+        <rect x="620" y="190" width="210" height="34" rx="8" fill="#431407"></rect>
+        <text class="b6aT" x="725" y="212" text-anchor="middle">object-locked nightly copy</text>
+        <text class="b6aM" x="620" y="250">retention set, delete refused</text>
+
+        <line x1="614" y1="112" x2="590" y2="200" stroke="#991B1B" stroke-width="1.5" stroke-dasharray="4 3"></line>
+        <line x1="582" y1="192" x2="598" y2="208" stroke="#991B1B" stroke-width="2.5"></line>
+        <line x1="598" y1="192" x2="582" y2="208" stroke="#991B1B" stroke-width="2.5"></line>
+        <text class="b6aR" x="482" y="226">no delete right</text>
+
+        <rect x="482" y="272" width="180" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b6aT" x="572" y="294" text-anchor="middle">recoverable 12 of 12</text>
+
+        <rect x="14" y="342" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b6aN" x="38" y="354">Paths to the crown jewels stay at 3 on both sides. Only the right-hand estate has a Monday.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the same admin login on both sides; only the right side has a copy it cannot reach.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What the admin login reaches, in order<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>The twelve tables.</strong> A drop is one statement per table, or one per schema. Seconds.</li>
+          <li><strong>The retention window.</strong> Time travel and snapshot retention are account or object parameters, and the admin role sets them. Reducing retention to its minimum, or dropping the objects that hold the snapshots, purges the recovery window that the drop would otherwise have been undone from.</li>
+          <li><strong>The warehouse-side export jobs.</strong> If your nightly copy is written by a job that the same admin controls, to a bucket the same account owns, the job can be stopped and the bucket emptied from the same seat. The copy has to live where the admin cannot follow it.</li>
+          <li><strong>Not the object-locked copy in a separate account.</strong> This is the only item on the list the login does not reach, and it is the whole of tonight's control. The admin can still drop every table; on Monday morning the twelve tables come back from a copy the drop never touched.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The ransomware pattern on data, and the canon<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Ransomware against a data estate follows one shape: <strong>drop or encrypt</strong> the tables, <strong>purge</strong> whatever the account can reach that would restore them, then <strong>demand</strong>. The second step is the one that decides whether the third step has any leverage. An estate whose only recovery is the account's own time travel has handed the attacker both the tables and the undo button.</p>
+        <p>On the bench, recoverable tables read 0 of 12 at every rung from nothing on through query logging, and 0 at the "perimeter firewall only" over-correction too. Immutable, restore-tested backups take it to 12 with paths still at three and undetected still at zero. The path count is untouched because the copy removes no way in; it removes the admin-to-backups edge, which was never a path to the crown jewels. It was the path to Monday.</p>
+        <div class="callout tip">
+          <p><strong>Ransomware does not need to exfiltrate to hurt you.</strong> A ransom note for the return of your own customers table works even if not one row left the building. Exfiltration detection in session 5 and recovery tonight are two different defences against two different endings of the same intrusion.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why a copy the same account can delete is a copy, not a backup<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The test is one question: <strong>can the credential that can destroy the original also destroy the copy?</strong> If yes, the copy protects against hardware failure, bad deploys and accidental deletes, all of which are real and worth protecting against. It protects against nothing that holds the admin login, because whatever dropped the table can delete the copy in the next statement.</p>
+        <table class="clean">
+          <thead><tr><th>Kind of copy</th><th>Protects against</th><th>Held by the admin login?</th><th>Counts as recoverable on the bench?</th></tr></thead>
+          <tbody>
+            <tr><td>Time travel</td><td>Your own mistakes inside the window</td><td>Yes, including the window</td><td>No</td></tr>
+            <tr><td>Snapshot in the same account</td><td>Mistakes, bad deploys, some corruption</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Nightly export to a bucket the warehouse account owns</td><td>Platform outage, mistakes</td><td>Yes, via the bucket</td><td>No</td></tr>
+            <tr><td>Export to a separate account, deletable there</td><td>Everything above, plus a compromised warehouse admin, until the second account is also compromised</td><td>No, but its own admin can delete it</td><td>Not yet</td></tr>
+            <tr><td>Object-locked copy in a separate account, restore-tested</td><td>All of the above, including anyone who holds either account</td><td>No, and nobody can delete it early</td><td>Yes: 12 of 12</td></tr>
+          </tbody>
+        </table>
+        <p>The fourth row is the one teams stop at, and it is nearly right. A separate account whose own administrator can still delete the copy has moved the problem, not removed it. Object lock is what turns a second account into a backup: the delete is refused for everyone until the retention period ends.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the three properties, the cost of immutability, what to back up, and the drill</span>
+      <h2>Immutable, separate, restore-tested</h2>
+      <span class="tag concept">8 min live</span>
+    </div>
+    <p class="lede">A backup that counts has three properties, and a copy that lacks any one of them is a hope with a storage bill. It cannot be deleted before its retention ends, by anyone. It lives in an account the warehouse administrator does not hold. And it has been restored, actually restored, into a real schema, and somebody wrote down how long it took.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A nightly copy passes through three gates in sequence: cannot be deleted before retention ends, lives in a separate account the warehouse admin does not hold, and has been restored in a timed drill. The output is a drill date. Any gate failed leaves a copy with a storage bill rather than a backup.">
+        <style>
+          .b6bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .b6bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b6bM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .b6bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b6bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b6bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <rect x="14" y="90" width="130" height="40" rx="8" fill="#FED7AA"></rect>
+        <text class="b6bH" x="79" y="115" text-anchor="middle">nightly copy</text>
+        <line x1="146" y1="110" x2="186" y2="110" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b6bAr)"></line>
+
+        <rect x="190" y="50" width="160" height="120" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <rect x="190" y="50" width="160" height="34" rx="10" fill="#431407"></rect>
+        <text class="b6bT" x="270" y="72" text-anchor="middle">cannot be deleted</text>
+        <text class="b6bM" x="202" y="108">object lock, or</text>
+        <text class="b6bM" x="202" y="124">the platform's equivalent</text>
+        <text class="b6bM" x="202" y="140">until retention ends,</text>
+        <text class="b6bM" x="202" y="156">by anyone at all</text>
+        <line x1="352" y1="110" x2="376" y2="110" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b6bAr)"></line>
+
+        <rect x="380" y="50" width="160" height="120" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <rect x="380" y="50" width="160" height="34" rx="10" fill="#7C2D12"></rect>
+        <text class="b6bT" x="460" y="72" text-anchor="middle">separate account</text>
+        <text class="b6bM" x="392" y="108">the warehouse admin</text>
+        <text class="b6bM" x="392" y="124">has no login here</text>
+        <text class="b6bM" x="392" y="140">and the bucket policy</text>
+        <text class="b6bM" x="392" y="156">refuses its delete</text>
+        <line x1="542" y1="110" x2="566" y2="110" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b6bAr)"></line>
+
+        <rect x="570" y="50" width="160" height="120" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <rect x="570" y="50" width="160" height="34" rx="10" fill="#7C2D12"></rect>
+        <text class="b6bT" x="650" y="72" text-anchor="middle">restored in a drill</text>
+        <text class="b6bM" x="582" y="108">last night's copy,</text>
+        <text class="b6bM" x="582" y="124">into a scratch schema,</text>
+        <text class="b6bM" x="582" y="140">row count checked,</text>
+        <text class="b6bM" x="582" y="156">timed and dated</text>
+        <line x1="732" y1="110" x2="766" y2="110" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b6bAr)"></line>
+
+        <rect x="770" y="90" width="96" height="40" rx="8" fill="#431407"></rect>
+        <text class="b6bT" x="818" y="115" text-anchor="middle">drill date</text>
+
+        <text class="b6bR" x="190" y="204">Fail any gate and it is a copy with a storage bill, not a backup.</text>
+
+        <rect x="14" y="240" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b6bN" x="38" y="252">The output is a date, not a setting. A backup that has never been restored is a hope.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three gates, one output: the date of the last restore that worked.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The three properties, and why each one is load-bearing<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Immutable.</strong> Object lock, or the storage platform's equivalent, with a retention period. Until the period ends the object cannot be deleted or overwritten by anyone, including the account's own root or owner. Without this, the second property only moves the problem to whoever administers the second account.</li>
+          <li><strong>Separate.</strong> A different cloud account or project, with its own identities, that the warehouse administrator has no login to. The export job that writes the copy has write access to the destination and nothing else; the warehouse side can push and cannot list, read or delete. Without this, the warehouse admin credential reaches the copy through the account it already holds.</li>
+          <li><strong>Restore-tested.</strong> Restored into a scratch schema on a schedule, with the row count compared to the source and the elapsed time written down. Without this, the first two properties protect a file that may not load, may be missing a table, or may take three days to bring back when the business expected three hours.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The honest cost of immutability<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A copy that nobody can delete for 30 days is a copy that you cannot delete for 30 days either. Your own mistakes, a copy that accidentally includes a column it should not, a table exported before a legal deletion request was honoured, all of them sit in the locked bucket until retention ends. That is not a flaw to engineer around; it is the property doing its job, and it is why the retention period is a governance decision with the data owner and whoever answers for privacy, not a platform default.</p>
+        <p>The practical shape: retention long enough that an intrusion discovered late still has a clean copy behind it, short enough that the storage cost and the deletion-request exposure are ones the business has agreed to. Thirty days is a common opening position. Write down who agreed and when.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What to back up, and the drill as the only proof<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>Not everything, nightly.</strong> Twelve tables at Ironwood, of which one is the incident and the rest can be rebuilt from source systems and pipelines if the definitions survive. The immutable copy carries the crown jewels and the metadata needed to rebuild the rest: table definitions, pipeline code, the grants, the inventory file. Copying every table every night into a locked bucket is a storage bill with a retention period; copying what cannot be rebuilt is a backup.</p>
+        <ul>
+          <li><strong>The crown jewels</strong>, full, nightly, in an open columnar format that any engine can read. The restore should not depend on the warehouse that was just dropped.</li>
+          <li><strong>The definitions</strong>: DDL for all twelve tables, the pipeline repository at the deployed commit, the role and grant definitions. Small, and the reason the other eleven tables come back.</li>
+          <li><strong>The inventory file itself</strong>, because after a destructive event it is the map of what existed.</li>
+        </ul>
+        <p><strong>The drill is the only proof.</strong> A backup that has never been restored is a hope with a storage bill. The drill is not a checkbox: it is a restore of last night's copy into a scratch schema, a row count compared against the source, and a stopwatch. The elapsed time is the number the business actually needs, because "we have backups" and "we can be back in four hours" are different promises. Do it monthly at first, quarterly once it is boring. The date of the last successful drill goes in the inventory file next to the edge it closes, and a drill date older than a quarter is a finding.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's first restore drill loaded eleven of twelve tables. The twelfth, customers, failed on a column type the export had written one way and the restore read another. Nobody had known for eight months. The fix took an hour; discovering it during an actual incident would have cost the only table that mattered.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>One immutable copy, one restore drill</h2>
+      <span class="tag demo">★ 20 min · everyone builds</span>
+    </div>
+    <p class="lede">Six steps, all against your own estate. The commands below are generic shapes: the unload statement, the object-lock setting, the bucket policy and the scheduler object all have platform-specific names, so substitute yours. Two of the steps need someone who can create a second cloud account or project; if that is not you, the step is a ticket with tonight's reasoning attached.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Export the customers table nightly to a bucket in a separate account.</strong> The destination account is one the warehouse admin has no login to. The credential the export uses can write to the destination prefix and nothing else: no list, no read, no delete. Use an open columnar format so the restore does not depend on the warehouse being alive.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+-- run from the warehouse, nightly, by a scheduled job (task, job or DAG by platform)
+-- destination: a bucket in the BACKUP account, write-only credential, dated prefix
+copy into 'backup-bucket-in-separate-account/customers/dt=2026-09-08/'
+from customers
+  credentials = ( &lt;write-only credential for the backup prefix, held as a placeholder here&gt; )
+  file_format = ( type = parquet );
+
+-- alongside it, the definitions the other eleven tables are rebuilt from
+copy into 'backup-bucket-in-separate-account/ddl/dt=2026-09-08/'
+from ( select table_name, ddl from information_schema_ddl_view )
+  credentials = ( &lt;REDACTED&gt; )
+  file_format = ( type = parquet );
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Enable object lock or the equivalent immutability setting, with a retention period.</strong> This is a bucket-level setting in the backup account, applied once, in compliance or governance mode rather than a mode any administrator can lift. The retention period is the governance decision from Part 2; 30 days is the opening position.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+# in the BACKUP account, once, by its own administrator (the shape; the flags differ by provider)
+storage bucket create  backup-bucket-in-separate-account  --object-lock-enabled
+storage bucket set-retention  backup-bucket-in-separate-account \
+    --mode compliance  --retention-days 30
+# compliance mode: no identity in the account, root or owner included, can shorten or remove it
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Confirm the warehouse admin credential cannot delete the object.</strong> Prove it from the admin seat, not from the design document. The delete must be refused twice over: by the bucket policy, because the warehouse account has no delete right there, and by object lock, even for an identity in the backup account.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+# as the WAREHOUSE admin credential (the one an attacker would hold)
+storage object delete  backup-bucket-in-separate-account/customers/dt=2026-09-07/part-0.parquet
+# expected: access denied - the warehouse account has no delete right on this bucket
+
+# as an administrator IN the backup account, to prove the lock itself
+storage object delete  backup-bucket-in-separate-account/customers/dt=2026-09-07/part-0.parquet
+# expected: refused - object is under a retention lock until 2026-10-07
+
+# record both refusals, with the date, in the inventory file
+        </div>
+        <p>If either delete succeeds, stop. You have a copy, not a backup, and the next three steps would be timing a restore from something an attacker could remove.</p>
+      </div>
+      <div class="step">
+        <p><strong>Perform a restore of last night's copy into a scratch schema, and time it.</strong> Restore into a schema that does not exist yet, so the drill cannot overwrite anything, and compare the row count to the source. The elapsed time is the number the business will ask for.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+create schema restore_drill_2026_09_08;
+
+-- note the start time
+select current_timestamp as drill_started;
+
+create table restore_drill_2026_09_08.customers like customers;
+copy into restore_drill_2026_09_08.customers
+from 'backup-bucket-in-separate-account/customers/dt=2026-09-07/'
+  credentials = ( &lt;read-only credential for the backup prefix, placeholder&gt; )
+  file_format = ( type = parquet );
+
+-- note the end time, then prove the copy is whole
+select current_timestamp as drill_finished;
+select (select count(*) from restore_drill_2026_09_08.customers) as restored_rows,
+       (select count(*) from customers)                          as source_rows;
+
+-- clean up once the numbers are recorded
+drop schema restore_drill_2026_09_08;
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Record the restore date and elapsed time in the inventory file.</strong> The date is the control. A backup with no drill date on file is indistinguishable, on paper, from one that fails on the twelfth table.</p>
+        <div class="prompt-box good">
+          <span class="label">★ The inventory file, recovery section</span>
+# recovery
+backup_copy      | customers + ddl, nightly, parquet, backup account, object lock 30d compliance
+delete_refused   | 2026-09-08 by warehouse admin (policy) and by backup admin (lock), both recorded
+last_restore     | 2026-09-08 | 12 tables of 12 | customers 1,204,311 rows = source | 41 min
+next_drill_due   | 2026-10-08
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Update the "closed by" column for the admin-to-backups edge.</strong> This is the one edge on the graph whose target is not the crown jewels, and until tonight its "closed by" cell said what it would take rather than what exists.</p>
+        <div class="prompt-box good">
+          <span class="label">★ The inventory file, one row changed</span>
+# from    -> to       | the move                                    | closed by                                        | seen by
+admin     -> backups  | DROP and purge, time travel included         | object-locked copy in separate account, drilled 2026-09-08 | admin audit log
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Put the drill on the calendar before anyone leaves.</strong> Monthly at first, with the same person restoring and the same file recording the time. The month the drill slips is the month the export format drifts, and nobody will know until the restore that matters.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 7</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Answer the one question for every copy of your crown jewels you can find: can the credential that can drop the table also delete this? Write the answer next to each copy in the inventory file. Expect most of them to be yes.</li>
+      <li>Find out who administers the account your backups live in, and whether that person also holds the warehouse admin login. If it is the same person, the separate account is separate on paper only.</li>
+      <li>Find the date of your last restore drill. If there is no date, that is the finding, and it goes in the file as a blank rather than being left unrecorded.</li>
+      <li>Write down the retention period you would propose, and the two people who need to agree to it: the data owner and whoever answers for deletion requests. Retention is their decision, informed by yours.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">Ironwood's warehouse has seven days of time travel and weekly snapshots. Why does the bench still show zero recoverable tables?</p>
+      <button class="qopt" type="button">A · Because seven days is too short a window to count as a backup</button>
+      <button class="qopt" type="button">B · Because time travel and snapshots are held by the same account as the tables, so the admin login that drops the tables can purge the recovery window in the same sitting</button>
+      <button class="qopt" type="button">C · Because snapshots do not include the customers table by default</button>
+      <p class="qwhy">Time travel is excellent against your own mistakes and useless against whoever holds the admin login. A copy the same account can delete is a copy, not a backup. Recovery is about where the copy lives and who can delete it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Immutable, restore-tested backups take recoverable tables from 0 to 12. What happens to the path count?</p>
+      <button class="qopt" type="button">A · It falls from three to one, because the admin-to-backups edge was a path</button>
+      <button class="qopt" type="button">B · It rises, because the backup bucket is a new copy of the data</button>
+      <button class="qopt" type="button">C · It stays at three; the copy removes no way in to the crown jewels, it removes the admin login's reach to the copy you would restore from</button>
+      <p class="qwhy">The admin-to-backups edge was never a path to the customers table. It was the path to Monday. Two rungs on the ladder move a number other than the path count, and this is the second.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">A team exports customers nightly to a bucket in a separate account, but has never restored from it. Which property is missing, and why does it matter?</p>
+      <button class="qopt" type="button">A · Restore-tested; the copy may not load, may be missing a table or a column type, and its restore time is unknown, so it is a hope with a storage bill</button>
+      <button class="qopt" type="button">B · Immutability; a separate account is enough on its own</button>
+      <button class="qopt" type="button">C · Nothing; a nightly export to a separate account is a complete backup</button>
+      <p class="qwhy">Ironwood's first drill loaded eleven of twelve tables and failed on customers. The drill is the only proof, and its output is a date and an elapsed time, not a setting.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Immutable, object-locked backups as the ransomware control</span>
+        <span class="note">Widely documented professional practice, taught as the norm with its reason: the copy that counts is the one no credential can delete before its retention ends.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Time travel and snapshots are not a backup against account compromise</span>
+        <span class="note">They are features of the account, deleted with it. The bench canon: recoverable 0 of 12 at every rung until immutable backups, then 12 with paths unchanged at 3.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Restore drills</span>
+        <span class="note">A timed restore into a scratch schema with a row-count check, dated in the inventory file, as the only proof a backup exists.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Recover function, applied</span>
+        <span class="note">Assets restored after an incident, proven by drill rather than asserted. The six functions as a whole are leader session 2.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">MITRE ATT&amp;CK v19.2 - Impact and Defense Impairment tactics</span>
+        <span class="note">The drop and the purge, named. Leader session 3 maps the fifteen tactics onto warehouse events.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Ransom negotiation, cyber insurance, regulator notification</span>
+        <span class="note">Not covered. The decision and reporting side of a destructive event is leader session 6 and the data governance course.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 6 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Time travel goes with the account</b><span>Whoever holds the admin login holds the recovery window too. Drop, purge, demand.</span></div>
+      <div class="cheat-item"><b>Copy versus backup</b><span>If the credential that can drop the table can delete the copy, it is a copy.</span></div>
+      <div class="cheat-item"><b>Recoverable 0 to 12, paths at 3</b><span>Prevention never moved this number. The copy removes no way in; it removes the admin's reach to Monday.</span></div>
+      <div class="cheat-item"><b>Three properties</b><span>Immutable (object lock, retention). Separate (an account the admin has no login to). Restore-tested (a date and a time).</span></div>
+      <div class="cheat-item"><b>Prove the refusal</b><span>Attempt the delete as the warehouse admin and as the backup admin. Both must fail. Record both.</span></div>
+      <div class="cheat-item"><b>Immutability costs you too</b><span>Your own mistakes cannot be deleted early either. Retention is a governance decision with named owners.</span></div>
+      <div class="cheat-item"><b>Back up what cannot be rebuilt</b><span>The crown jewels, the DDL, the pipeline commit, the grants, the inventory file. Not everything nightly.</span></div>
+      <div class="cheat-item"><b>The drill is the proof</b><span>A backup never restored is a hope with a storage bill. Its output is a date and an elapsed time.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Builder session 6 of 8 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="b5-exfiltration-detection.html">← Builder session 5 · Exfiltration detection</a>
+      <a href="b7-detection-engineering.html">Builder session 7 · Detection engineering →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

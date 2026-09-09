@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Leader session 4 of 6. Warehouse time travel and snapshots are features of the account, so whoever holds the admin login deletes them with the data. Why Ironwood's recoverable count stays at 0 of 12 through every prevention control, and what takes it to 12.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Backups are attack surface too - learn cyber security with phoebe">
+<meta property="og:description" content="Leader session 4 of 6. A backup only counts if the account that reads the warehouse cannot delete it, and somebody has restored from it.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/a4-backups-attack-surface.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Backups are attack surface too - learn cyber security with phoebe">
+<meta name="twitter:description" content="Time travel is not a backup. The Monday question, answered as yes or no with the date of the last restore.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Leader session 4 · Backups are attack surface too - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Leader session 4 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Leader session 4 of 6</div>
+    <h1>Backups are <span class="accent">attack surface</span> too</h1>
+    <p class="sub">Every disaster-recovery plan says the data is backed up. Almost none of them say who can delete the backup. At Ironwood the answer was the same admin login that reads the warehouse, because time travel, snapshots and the retention window are features of the account, and an account is exactly what an attacker takes. Tonight is about the one question that turns "we have backups" into a yes or a no: if somebody gets the admin login tonight, do we have Monday? By the end of the hour you will know how to answer it with a date in the sentence.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Data and technology leaders</span>
+      <span class="chip audience">Whoever signs off the DR plan</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-22 · Why time travel is not a backup</span>
+      <span class="a3" style="flex:4">22-40 · Build-along: the restore question</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits in the leader track</h2>
+    </div>
+    <p class="lede">Session 1 counted nine paths to Ironwood's customers table. Session 2 put the six functions of NIST CSF 2.0 onto the estate. Session 3 walked the kill chain through the data stack and ended at the tactic called Impact, which on a warehouse means the tables are gone. Tonight picks up there: an attacker who has reached the admin login is not finished when they have read the data, and the thing that decides whether the company survives what they do next is a decision made months earlier about where the backup lives and who can touch it. <strong>Ironwood</strong> has twelve tables, one of them the customers table, and a nightly backup in the same account as everything else.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> The professional rule that a copy the reading account can delete is not a backup, and the reason behind it. The number that makes it concrete: Ironwood's recoverable count is 0 of 12 tables at every rung of the control ladder until the backups are made immutable and restore-tested, at which point it is 12 of 12 with the path count unchanged at 3. And a one-sentence answer to the board's question, with the date of the last successful restore inside it.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why a backup is a security control and not an operations detail<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Backups were designed for the failures operations teams expect: a disk dies, a job double-loads a table, an analyst drops the wrong schema on a Thursday. Against those, a snapshot in the same account is perfect, because the person restoring is the same person who owns the account and nobody is trying to stop them.</p>
+        <p>An attacker changes the shape of the failure. The person who deleted the tables also holds the login that owns the snapshots, and their first move after reaching admin is to remove anything that would let you undo their second move. A backup that survives that is a different object from a backup that survives a disk failure, and most estates have only the second kind.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's DR plan ran to eleven pages and had passed two audits. It said the warehouse was snapshotted nightly and retained for thirty days, and every word was true. Nowhere did it say that the snapshots lived in the account the admin login controlled, so an attacker with that login could shorten the retention to zero, drop the twelve tables, and leave the company with a compliant plan and no data.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Five words for tonight<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Time travel</strong> - a warehouse feature that lets you query a table as it was some hours or days ago. Lives inside the account. Purged by whoever administers the account.</li>
+          <li><strong>Snapshot</strong> - a point-in-time copy the platform keeps for you, usually in the same account and region. Same owner, same fate.</li>
+          <li><strong>Retention window</strong> - how long time travel and snapshots are kept. A setting, which means an admin can change it, which means an attacker with admin can set it to nothing.</li>
+          <li><strong>Immutable copy</strong> - a backup written somewhere the reading account has no delete permission, usually a separate account with object lock or a legal-hold style retention that no login in the warehouse account can shorten.</li>
+          <li><strong>Restore drill</strong> - actually bringing a table back from the copy, on a known date, by a named person, in a measured time. The only evidence that a backup exists.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers why account-owned copies fall with the account, and the ransomware pattern on data estates</span>
+      <h2>The backup goes with the account</h2>
+      <span class="tag concept">10 min live</span>
+    </div>
+    <p class="lede">Warehouse time travel, snapshots and retention windows are features of the account. Whoever holds the admin login holds them, and can delete them along with the data. That single fact is why "is it backed up" has a yes answer and a no meaning at most mid-size companies, and why the recoverable count on Ironwood's ladder sits at zero for so long.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two estates side by side. In estate A the phished admin login reaches both the warehouse of twelve tables and the backups, which are time travel and snapshots in the same account, and the recoverable count is 0 of 12. In estate B the same login reaches the warehouse but an immutable copy in a separate account with object lock sits outside its reach, and the recoverable count is 12 of 12.">
+        <style>
+          .a4aT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a4aS { font: 400 10px Inter, sans-serif; fill: #fff; }
+          .a4aH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .a4aB { font: 400 10px Inter, sans-serif; fill: #1C1210; }
+          .a4aM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a4aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .a4aG { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .a4aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+        <defs>
+          <marker id="a4aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="a4aRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <rect x="14" y="40" width="416" height="300" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <rect x="14" y="40" width="416" height="34" rx="10" fill="#431407"></rect>
+        <text class="a4aT" x="222" y="62" text-anchor="middle">Estate A · backups inside the login's reach</text>
+
+        <rect x="30" y="100" width="160" height="32" rx="7" fill="#FDBA74"></rect>
+        <text class="a4aH" x="110" y="121" text-anchor="middle">phished admin login</text>
+
+        <rect x="30" y="190" width="170" height="40" rx="8" fill="#7C2D12"></rect>
+        <text class="a4aT" x="115" y="215" text-anchor="middle">warehouse · 12 tables</text>
+
+        <rect x="240" y="190" width="170" height="48" rx="8" fill="#FED7AA"></rect>
+        <text class="a4aH" x="325" y="209" text-anchor="middle">backups</text>
+        <text class="a4aB" x="325" y="226" text-anchor="middle">time travel, snapshots</text>
+
+        <line x1="110" y1="134" x2="112" y2="186" stroke="#991B1B" stroke-width="1.5" marker-end="url(#a4aRd)"></line>
+        <text class="a4aR" x="122" y="164">drop the tables</text>
+        <line x1="192" y1="120" x2="318" y2="186" stroke="#991B1B" stroke-width="1.5" marker-end="url(#a4aRd)"></line>
+        <text class="a4aR" x="258" y="146">purge the window</text>
+
+        <text class="a4aR" x="30" y="284">recoverable: 0 of 12 tables</text>
+        <text class="a4aM" x="30" y="304">same account, same login, same fate</text>
+        <text class="a4aM" x="30" y="322">a compliant DR plan and no Monday</text>
+
+        <rect x="450" y="40" width="416" height="300" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <rect x="450" y="40" width="416" height="34" rx="10" fill="#7C2D12"></rect>
+        <text class="a4aT" x="658" y="62" text-anchor="middle">Estate B · an immutable copy outside its reach</text>
+
+        <rect x="466" y="100" width="160" height="32" rx="7" fill="#FDBA74"></rect>
+        <text class="a4aH" x="546" y="121" text-anchor="middle">phished admin login</text>
+
+        <rect x="466" y="190" width="170" height="40" rx="8" fill="#7C2D12"></rect>
+        <text class="a4aT" x="551" y="215" text-anchor="middle">warehouse · 12 tables</text>
+
+        <rect x="676" y="190" width="176" height="48" rx="8" fill="#431407"></rect>
+        <text class="a4aT" x="764" y="209" text-anchor="middle">immutable copy</text>
+        <text class="a4aS" x="764" y="226" text-anchor="middle">own account, object lock</text>
+
+        <line x1="546" y1="134" x2="548" y2="186" stroke="#991B1B" stroke-width="1.5" marker-end="url(#a4aRd)"></line>
+        <text class="a4aR" x="558" y="164">drop the tables</text>
+        <line x1="628" y1="120" x2="726" y2="172" stroke="#D9CBC0" stroke-width="1.5" stroke-dasharray="4 3"></line>
+        <circle cx="730" cy="174" r="6" fill="#7C2D12"></circle>
+        <text class="a4aM" x="690" y="150">no delete permission</text>
+
+        <line x1="700" y1="240" x2="660" y2="262" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a4aAr)"></line>
+        <text class="a4aM" x="706" y="266">restore, 41 minutes</text>
+
+        <text class="a4aG" x="466" y="284">recoverable: 12 of 12 tables</text>
+        <text class="a4aM" x="466" y="304">same attack, same login, same tables</text>
+        <text class="a4aM" x="466" y="322">the copy was never in the fight</text>
+
+        <rect x="14" y="366" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a4aN" x="38" y="377">Same login, same tables, same attack. The only difference is whether the copy is inside the login's reach.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - two estates, one attacker, and the one decision that separates 0 of 12 from 12 of 12.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The rule: whoever administers the account owns its recovery features<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Time travel is a table setting. The snapshot schedule is an account setting. The retention window is a number in a configuration screen. All three are administered by the same role that creates and drops tables, because the platform reasonably assumes that the administrator is on the company's side. The moment the administrator's login belongs to somebody else, so do the settings, and a retention window of thirty days becomes a retention window of nothing in one action.</p>
+        <p>This is why the professional norm draws the line where it does. A copy counts as a backup only if the account that reads the warehouse has no permission to delete it. Not "is unlikely to", not "would need a second approval to": no permission, enforced by a different account with a different set of logins, ideally with an object lock or retention hold that nobody in the warehouse account can shorten. Anything else is a convenience feature that happens to look like a backup on a slide.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The ransomware pattern on a data estate, in three moves<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Ransomware against a warehouse does not need to encrypt anything, because a warehouse already gives an administrator everything needed to make the data unreachable. The pattern has three moves and only the third one is visible to the business.</p>
+        <ul>
+          <li><strong>Make the data unreachable.</strong> Drop the tables, or overwrite them, or in some estates encrypt the underlying files. On a warehouse the drop is enough; there are twelve tables at Ironwood and dropping them is twelve statements.</li>
+          <li><strong>Remove the recovery window.</strong> Shorten time travel to zero, delete the snapshots, cancel the schedule. This move is the whole reason the attack works, and it is only possible because the recovery features live in the account the attacker now holds.</li>
+          <li><strong>Ask for money.</strong> The note arrives after the first two moves are complete, so by the time anyone knows there is an incident the question of whether a backup exists has already been answered.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's incident tabletop had always started at the ransom note. Played from the attacker's side, the note is the last event, not the first, and the two events before it decide the outcome. The team's honest answer to "what would we restore from" was the snapshots, and the honest answer to "who can delete the snapshots" was the login the exercise assumed had been lost. The DR plan was rewritten that afternoon, and the first line of the new one was where the copy lives.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What the ladder shows: zero, zero, zero, then twelve<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Ironwood's control ladder from session 1 has a third column that nobody looked at until tonight: how many of the twelve tables survive an attacker who reaches the admin login. It reads zero at the baseline. It reads zero after MFA takes the paths from nine to six. It reads zero after key rotation, after the private bucket, after pinned dependencies, and it still reads zero at the rung where every one of those prevention controls is on and query logging has taken the undetected count to nothing: three paths, zero unseen, zero recoverable.</p>
+        <p>Then one control, immutable and restore-tested backups, moves it from 0 to 12. The path count does not change; it stays at 3. The undetected count does not change; it stays at 0. Nothing about how the attacker gets in has altered. The only thing that has changed is what they can take away when they do, and that is the whole point of the rung: a control can matter completely without touching the headline number.</p>
+        <table class="clean">
+          <thead><tr><th>Controls on</th><th>Paths to customers</th><th>Unseen</th><th>Recoverable of 12</th></tr></thead>
+          <tbody>
+            <tr><td>Nothing</td><td>9</td><td>9</td><td>0</td></tr>
+            <tr><td>+ MFA on every human login</td><td>6</td><td>6</td><td>0</td></tr>
+            <tr><td>+ rotate service keys</td><td>5</td><td>5</td><td>0</td></tr>
+            <tr><td>+ private export bucket</td><td>4</td><td>4</td><td>0</td></tr>
+            <tr><td>+ pinned, verified dependencies</td><td>3</td><td>3</td><td>0</td></tr>
+            <tr><td>+ query logging and egress alerting</td><td>3</td><td>0</td><td>0</td></tr>
+            <tr><td><strong>+ immutable, restore-tested backups</strong></td><td><strong>3</strong></td><td><strong>0</strong></td><td><strong>12</strong></td></tr>
+            <tr><td>+ least privilege on the analyst role</td><td>1</td><td>0</td><td>12</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why the perimeter firewall does nothing for the backups either<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The most common single security purchase, a perimeter allowlist on the warehouse, leaves Ironwood at seven paths, seven unseen, and zero recoverable tables. It does nothing for the backups for the same reason it does little for the paths: a phished admin logs in from their own laptop, inside the allowlist, and once inside they hold every setting the account has. Where a credential may be used from is a different question from what the credential may do once it is used, and the backup question lives entirely in the second.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers restore drills, the cost of immutability, the Recover function and the Monday question</span>
+      <h2>Restore-tested, or not a backup</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">Having a copy the attacker cannot delete is necessary and not sufficient. A copy nobody has ever restored from is a hope with a storage bill. The professional standard has three rungs, and only the third one is a backup.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three rungs drawn as ascending steps. Rung one, a copy exists, such as a nightly snapshot or time travel in the same account, marked not a backup against ransomware. Rung two, the reading account cannot delete the copy, a separate account with object lock, marked a copy you hope works. Rung three, the copy has been restored in a drill on a known date by a named person in a measured time, marked a backup.">
+        <style>
+          .a4bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a4bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .a4bM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a4bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .a4bG { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .a4bK { font: 700 11px Inter, sans-serif; fill: #6B5A50; }
+          .a4bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+        <defs>
+          <marker id="a4bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <text class="a4bK" x="14" y="212">rung 1</text>
+        <rect x="14" y="222" width="250" height="44" rx="8" fill="#FED7AA"></rect>
+        <text class="a4bH" x="139" y="249" text-anchor="middle">A copy exists</text>
+        <text class="a4bM" x="26" y="290">nightly snapshot, time travel</text>
+        <text class="a4bM" x="26" y="306">a dump in the same account</text>
+        <text class="a4bM" x="26" y="322">deleted with the admin login</text>
+        <text class="a4bR" x="26" y="346">not a backup against ransomware</text>
+
+        <line x1="268" y1="244" x2="312" y2="170" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a4bAr)"></line>
+
+        <text class="a4bK" x="315" y="136">rung 2</text>
+        <rect x="315" y="146" width="250" height="44" rx="8" fill="#FDBA74"></rect>
+        <text class="a4bH" x="440" y="173" text-anchor="middle">The reader cannot delete it</text>
+        <text class="a4bM" x="327" y="214">separate account, object lock</text>
+        <text class="a4bM" x="327" y="230">retention nobody can shorten</text>
+        <text class="a4bM" x="327" y="246">never actually restored</text>
+        <text class="a4bR" x="327" y="270">a copy you hope works</text>
+
+        <line x1="569" y1="168" x2="613" y2="94" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a4bAr)"></line>
+
+        <text class="a4bK" x="616" y="60">rung 3</text>
+        <rect x="616" y="70" width="250" height="44" rx="8" fill="#7C2D12"></rect>
+        <text class="a4bT" x="741" y="97" text-anchor="middle">Restored in a drill</text>
+        <text class="a4bM" x="628" y="138">restored on a known date</text>
+        <text class="a4bM" x="628" y="154">by a named person</text>
+        <text class="a4bM" x="628" y="170">in a measured time</text>
+        <text class="a4bG" x="628" y="194">a backup</text>
+
+        <rect x="616" y="222" width="250" height="1" fill="#D9CBC0"></rect>
+        <text class="a4bM" x="628" y="246">the Monday answer needs rung 3:</text>
+        <text class="a4bM" x="628" y="262">a yes, and the date it was proven</text>
+
+        <rect x="14" y="360" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a4bN" x="38" y="371">Only the third rung answers the Monday question. The first two answer a questionnaire.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the backup ladder: a copy, a copy the reader cannot delete, a copy somebody has restored from.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Having a copy versus being able to restore it<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three things go wrong between a copy and a restore, and none of them shows up on a storage dashboard. The copy turns out to be incomplete, because the job that writes it silently skipped a table after a schema change eight months ago. The restore takes far longer than anyone assumed, because nobody had ever measured it and the crown-jewel table is four hundred million rows. And the one person who knew the sequence of steps left in the spring, and the runbook they wrote refers to a console that has since been redesigned.</p>
+        <p>A restore drill is the only instrument that detects all three. It is a scheduled event, quarterly at most estates, in which a named person restores the crown-jewel table from the immutable copy into a scratch environment, compares row counts against production, and writes down the date and the elapsed time. The write-down is the point: the date is the evidence that the backup exists, and the time is the number the incident plan is allowed to promise.</p>
+        <div class="callout tip">
+          <p><strong>The drill is cheap and the absence of a drill is not.</strong> A quarterly restore of one table costs an afternoon of one engineer's time and some scratch compute. The first time it is done it usually finds something, and finding it on a Tuesday afternoon in a drill is the cheapest possible way to find it.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The honest cost of immutability<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>An immutable copy protects the data from the attacker by protecting it from everybody, including you. A table loaded with the wrong rows sits in the immutable copy until the retention period expires. A dataset that should never have been retained, or that a customer has a right to have erased, is held for as long as the lock says. You cannot delete your own mistakes either, and that is not a flaw in the control; it is the control.</p>
+        <p>This turns the retention window from a storage setting into a governance decision. How long the immutable copy is held, what may be written into it, and how erasure duties are met while it exists are questions for the people who own data policy, not the people who own the platform. The governance course owns the erasure duty itself; what belongs here is the recognition that immutability makes the retention number a decision with two sides, and that somebody senior has to sign it.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Recover: funded last, needed first<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>NIST CSF 2.0, published on 26 February 2024, names six functions: Govern, Identify, Protect, Detect, Respond, Recover. Session 2 put all six onto the estate. Recover is the one that restores assets and operations after an incident, and across most security budgets it is the function funded last, because it produces nothing on a good day and its whole value is realised on a day everyone hopes never comes.</p>
+        <p>On the day it does come, Recover is needed first. Every other function has already had its turn by the time the ransom note arrives: Protect did or did not stop the login, Detect did or did not see the drop. The only question left is whether there is a copy outside the attacker's reach and whether somebody knows how to bring it back. That is the whole of Recover, and it costs a separate account, an object lock and a quarterly afternoon.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The board question, answered as yes or no with a date<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The question a board or a customer is really asking, underneath "is the data backed up", is this: if somebody gets the admin login tonight, do we have Monday? It has a yes or no answer, and the answer is only credible with the date of the last successful restore next to it. A yes with no date is a hope. A no is uncomfortable and is also the most useful sentence a leader can put in front of a budget committee, because it names a specific thing to fund and the thing is not expensive.</p>
+        <div class="prompt-box bad">
+          <span class="label">✗ The DR plan sentence that is true and decides nothing</span>
+The warehouse is backed up nightly and snapshots are retained for thirty days.
+        </div>
+        <div class="prompt-box good">
+          <span class="label">★ The Monday answer, one sentence with a date in it</span>
+If the admin login is lost tonight we have Monday: yes. The immutable copy sits in a separate account with an object lock the warehouse admin cannot shorten, and the customers table was last restored from it on 14 August 2026 in 41 minutes by Dana Okoro.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Three ways an immutable copy quietly stops being one<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>The separate account gets the same admins.</strong> For convenience, the platform team is given administrative rights on the backup account too. The two accounts are now one account with two names, and a phished platform admin reaches both. The backup account needs its own logins, held by fewer people, with its own MFA.</li>
+          <li><strong>The lock has an off switch in the warehouse account.</strong> Some retention holds can be released by whoever created them. If the releasing role lives in the warehouse account, the copy is deletable in two steps instead of one, which an attacker will not mind.</li>
+          <li><strong>The copy job stops and nobody notices.</strong> A credential expires, the job fails, the immutable copy is faithfully preserving data from six weeks ago. The restore drill catches this by comparing dates and row counts; a storage dashboard showing a healthy bucket does not.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>The restore question</h2>
+      <span class="tag demo">★ 18 min · everyone builds</span>
+    </div>
+    <p class="lede">No tools and no access to anything. Four questions to put to whoever runs your warehouse, and one sentence to write at the end. If you have no estate to hand, use Ironwood's and write its Monday answer as it stood before the DR plan was rewritten: it is a no.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Find out whether your backups can be deleted by the admin login.</strong> Ask where the copy lives, which account owns it, and whether any login that can read the warehouse can also delete, shorten or cancel it. If the answer includes the words time travel or snapshot and nothing else, the answer is yes. Write down "recoverable: 0 of N tables" until somebody shows you a copy that login cannot touch.</p>
+      </div>
+      <div class="step">
+        <p><strong>Find the date of the last restore actually performed.</strong> Not scheduled, not documented in a plan, not tested by the vendor: performed, by a person on your team, from your copy, into an environment where the result could be checked. If nobody can name a date, the date is "never" and it goes on the page as that word.</p>
+      </div>
+      <div class="step">
+        <p><strong>Time a restore of the crown-jewel table, or write "unknown".</strong> If a restore has been done, find out how long it took from decision to usable table. If it has not, the honest entry is "unknown", and "unknown" is a number the incident plan cannot promise against. Ironwood's first measured restore of the customers table took 41 minutes; its DR plan had assumed ten.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write the Monday answer as one sentence with a date in it.</strong> "If the admin login is lost tonight we have Monday: yes or no", followed by where the copy lives, who cannot delete it, and when it was last restored. If any part of that sentence is a guess, mark it as a guess. A marked guess is a funding request; an unmarked one is a future incident report.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Put the sentence in the DR plan, on page one.</strong> A DR plan that opens with where the copy lives and when it was last restored is a control. One that opens with a retention window is a description of a feature the attacker also has access to.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 5</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Put the four build-along questions to whoever runs your warehouse, in writing, and keep the replies. The reply "I would have to check" is the finding, and so is any reply that mentions a retention window without mentioning an account.</li>
+      <li>Find your DR plan and read the backup section with one question in mind: does it say who can delete the copy? Underline every sentence that describes a feature and none that describe a permission.</li>
+      <li>Write your Monday answer as it stands today, with the real date or the word "never", and put it next to Ironwood's 0 of 12.</li>
+      <li>If your answer is a no, cost the fix: a separate account, an object-locked bucket, a copy job, and one afternoon a quarter. Take that number to whoever owns the budget with the Monday sentence stapled to it.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Ironwood snapshots the warehouse nightly and keeps thirty days of time travel, all in the warehouse account. An attacker reaches the admin login. How many of the twelve tables are recoverable?</p>
+      <button class="qopt" type="button">A · 12, because thirty days of history is more than enough to roll back a drop</button>
+      <button class="qopt" type="button">B · 6, because snapshots and time travel are separate mechanisms and the attacker would have to defeat both</button>
+      <button class="qopt" type="button">C · 0, because time travel and snapshots are features of the account, and the login that drops the tables can also purge the recovery window</button>
+      <p class="qwhy">The recovery features are administered by the same role that creates and drops tables. Whoever holds that login holds the retention window, and setting it to nothing is one action. This is the 0 of 12 that sits on every rung of the ladder until the copy is moved outside the login's reach.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">On Ironwood's ladder, MFA, key rotation, the private bucket, pinned dependencies and full query logging are all on: 3 paths, 0 unseen. What does adding immutable, restore-tested backups change?</p>
+      <button class="qopt" type="button">A · Recoverable goes from 0 to 12 of 12; the path count stays at 3 and unseen stays at 0</button>
+      <button class="qopt" type="button">B · The path count drops from 3 to 1, because the attacker can no longer reach the backups</button>
+      <button class="qopt" type="button">C · Nothing measurable, because the attacker's paths into the warehouse are unchanged</button>
+      <p class="qwhy">Nothing about how the attacker gets in changes, so paths and unseen are untouched. What changes is what they can take away when they do: 0 of 12 becomes 12 of 12. A control can matter completely without moving the headline path count, and this rung exists to show it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">A copy of the customers table is written nightly to a separate account with an object lock the warehouse admin cannot shorten. Nobody has ever restored from it. Is it a backup?</p>
+      <button class="qopt" type="button">A · Yes, because the reading account cannot delete it, which is the whole definition</button>
+      <button class="qopt" type="button">B · Not yet: it is a copy you hope works, and it becomes a backup on the date somebody restores from it and writes down how long it took</button>
+      <button class="qopt" type="button">C · No, because a nightly copy loses up to a day of data and a backup must be continuous</button>
+      <p class="qwhy">Immutability is the second rung. The third is a restore drill on a known date by a named person in a measured time, which is the only instrument that catches an incomplete copy, an unmeasured restore time or a runbook nobody can follow. The Monday answer needs that date in it.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Ransomware on a data estate</span>
+        <span class="note">Make the data unreachable, remove the recovery window, ask for money. Why the note is the last event and not the first.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Time travel and snapshots are not a backup</span>
+        <span class="note">Account-owned recovery features fall with the account. The professional norm and its reason: no delete permission for the reading account, enforced by a separate account.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Immutability and restore drills</span>
+        <span class="note">Object lock and retention holds, their governance cost, and the quarterly drill as the only evidence a backup exists. The canon: recoverable 0 to 12 with paths unchanged at 3.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">NIST CSF 2.0 Recover function</span>
+        <span class="note">Placed tonight as funded last and needed first. All six functions on the estate, with the 26 February 2024 publication date, are session 2.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Building the immutable copy and running the drill</span>
+        <span class="note">Named as an outcome. The account layout, copy job and drill procedure are builder session 6.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Retention, erasure and data policy</span>
+        <span class="note">Named as the governance cost of immutability. The duties themselves belong to the data governance course.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Attacking models, prompts and agents</span>
+        <span class="note">Not covered by design. Model-side threats belong to the AI red-team course; this is the estate underneath.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 4 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The backup goes with the account</b><span>Time travel, snapshots and retention are features of the account. Whoever holds admin deletes them with the data.</span></div>
+      <div class="cheat-item"><b>The rule</b><span>A copy is a backup only if the account that reads the warehouse has no permission to delete it. Separate account, object lock.</span></div>
+      <div class="cheat-item"><b>Three moves</b><span>Make the data unreachable, remove the recovery window, ask for money. The note is the last event.</span></div>
+      <div class="cheat-item"><b>0, 0, 0, then 12</b><span>Ironwood's recoverable count is 0 of 12 at every rung until immutable backups take it to 12. Paths stay at 3.</span></div>
+      <div class="cheat-item"><b>Three rungs</b><span>A copy exists; the reader cannot delete it; it has been restored in a drill. Only the third is a backup.</span></div>
+      <div class="cheat-item"><b>The drill</b><span>Quarterly, a named person, the crown-jewel table, a known date, a measured time. The date is the evidence.</span></div>
+      <div class="cheat-item"><b>The cost of immutability</b><span>You cannot delete your own mistakes either. Retention becomes a governance decision somebody senior signs.</span></div>
+      <div class="cheat-item"><b>The Monday answer</b><span>"If the admin login is lost tonight, do we have Monday?" Yes or no, with the date of the last successful restore.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Leader session 4 of 6 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="a3-kill-chain.html">← Leader session 3 · The kill chain</a>
+      <a href="a5-detect-what-you-cannot-prevent.html">Leader session 5 · Detect what you cannot prevent →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

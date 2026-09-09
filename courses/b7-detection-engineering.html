@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Builder session 7 of 8. A detection is a hypothesis about an attacker's tactic, written as a query over your own logs. Five ATT&amp;CK tactics, five detections over login, grant and query history, one review table with a named reviewer per row, and the noise rule that keeps it read.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Detection engineering - learn cyber security with phoebe">
+<meta property="og:description" content="Builder session 7 of 8. From a tactic to a query: five detections, one review table, and the honest limit of what a log can attribute.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/b7-detection-engineering.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Detection engineering - learn cyber security with phoebe">
+<meta name="twitter:description" content="Five tactics, five queries, one table somebody reads every morning.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Builder session 7 · Detection engineering - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Builder session 7 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Builder session 7 of 8</div>
+    <h1>Detection <span class="accent">engineering</span></h1>
+    <p class="sub">Session 5 wrote two detections by looking at where customer data leaves. Tonight works the other way round: start from what an attacker is trying to do, say what that would look like in Ironwood's own logs, and write the query that would catch it. Five tactics from the ATT&amp;CK list cover every edge on the graph that still has no log against it: a service account logging in from somewhere new, a Friday admin grant, an unusual read, a copy to a bucket nobody approved, and a DROP against the table or its backups. Each becomes a query with a threshold tuned against its own history and a named person who reads what it writes. By the end the inventory file has a "seen by" entry on every remaining edge, and the review table is short enough that somebody will actually open it.</p>
+    <div class="chip-row">
+      <span class="chip level">🔴 Hardest</span>
+      <span class="chip audience">Platform and analytics engineers</span>
+      <span class="chip audience">Whoever reads the review table</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-20 · From a tactic to a query</span>
+      <span class="a3" style="flex:4">20-40 · Build-along: five detections, one review table</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where session 7 sits on the ladder</h2>
+    </div>
+    <p class="lede">Six sessions in, Ironwood's bench reads three paths to the customers table, none of them undetected, and twelve of twelve tables recoverable. The two detections from session 5 did the undetected work: query logging and egress alerting take that number from three to zero while the path count stays at three. What they do not do is watch the edges that lead up to a read. A service key used from a new address, a role granted on a Friday, a DROP against the backup schema: none of those is a SELECT on customers, so none of them appears in the session 5 review table. Tonight fills those gaps with three more detections and puts all five in one place.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A method that turns any tactic on the ATT&amp;CK list into a query over the logs you already have, in five steps. Five detections over login history, grant history and query history, each with a threshold tuned so it fires less than once a week without a real cause. One review table all five write to, with a tactic, an object, an actor, the evidence and a named reviewer on every row. And an inventory file where every remaining edge names the log that sees it.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why the finished design is only defensible because these queries exist<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The finished Ironwood design has one open path: the support agent's own legitimate session reading customer records. No control removes it without stopping the work. The bench accepts that path as the honest remainder for one reason only: it crosses a logged edge, and somebody reads the log. Turn detection off and keep every prevention control on, and the bench reads one path and one undetected. Same door, same room, and now it is dark.</p>
+        <p>So the queries written tonight are not a monitoring nicety layered on top of a secure estate. They are the thing that makes it acceptable to leave the last door open. A leader who signs off the design is signing off the assumption that these detections run, that their thresholds are sane, and that a named human reads the table every day. The engineering that follows is about making that assumption true.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's Friday admin grant was found by the session 5 unusual-read detection, six weeks after it was made, the first time the analyst used the role against customers. Grant history had recorded the grant itself within a second of it happening. Nobody had written the query that reads grant history, so the earliest possible signal sat unread for six weeks while the later signal did the work. Detection engineering is the practice of writing the earlier query.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The vocabulary for tonight<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Tactic</strong> - ATT&amp;CK's word for the attacker's goal at one stage. Version 19.2 lists fifteen for the enterprise matrix; tonight uses five of them: Credential Access, Privilege Escalation, Collection, Exfiltration and Impact.</li>
+          <li><strong>Hypothesis</strong> - a sentence of the form "if an attacker were doing this tactic here, the log would show that". Every detection starts as one, and a detection that cannot be stated as one is a query looking for a purpose.</li>
+          <li><strong>Login history</strong> - the warehouse's record of every authentication: who, when, from which address and client, whether it succeeded. Distinct from query history, which starts after the login.</li>
+          <li><strong>Grant history</strong> - the record of every role granted or revoked, to whom, by whom, when. Most platforms expose it as a system view or an account-usage table; some only as an audit log export.</li>
+          <li><strong>Change window</strong> - the agreed hours in which privilege changes are expected, with a ticket. A grant outside one is not wrong; it is a row.</li>
+          <li><strong>Precision</strong> - of the rows a detection writes, the share that had a real cause. The discipline is to raise it by tuning against the detection's own history, never by making the query blind.</li>
+          <li><strong>Review table</strong> - the one table all detections write to. Its reviewer and outcome columns are the control; everything upstream is plumbing.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the five-step method and the five detections that finish Ironwood's graph</span>
+      <h2>A detection is a hypothesis about a tactic, written as a query</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">The mistake most detection programmes make is to start from the log and ask what could be queried. Start from the attacker instead. Pick a tactic, say what it would look like in your own logs, then write the query. The tactic list is finite and public; the logs are yours; the hypotheses in between are the engineering.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Five lanes, one per ATT&amp;CK tactic: Credential Access, Privilege Escalation, Collection, Exfiltration, Impact. Each lane names what the tactic looks like in Ironwood's logs and the detection that catches it. Below all five, outside every lane, the export bucket path is drawn as a request to the object store that none of the five sees.">
+        <style>
+          .b7aT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .b7aH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .b7aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .b7aM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b7aQ { font: 600 11px "SFMono-Regular", Menlo, monospace; fill: #2A1208; }
+          .b7aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b7aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+
+        <text class="b7aM" x="14" y="14">tactic, as ATT&amp;CK v19.2 names it</text>
+
+        <rect x="14" y="20" width="160" height="34" rx="8" fill="#431407"></rect>
+        <text class="b7aT" x="94" y="42" text-anchor="middle">Credential Access</text>
+        <rect x="14" y="60" width="160" height="200" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b7aM" x="26" y="82">in the log</text>
+        <text class="b7aB" x="26" y="100">login_history:</text>
+        <text class="b7aB" x="26" y="118">service account from</text>
+        <text class="b7aB" x="26" y="136">a new client or IP</text>
+        <text class="b7aM" x="26" y="176">detection</text>
+        <text class="b7aQ" x="26" y="194">new_client_login</text>
+        <text class="b7aM" x="26" y="230">the leaked ETL key</text>
+        <text class="b7aM" x="26" y="246">used from elsewhere</text>
+
+        <rect x="188" y="20" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b7aT" x="268" y="42" text-anchor="middle">Privilege Escalation</text>
+        <rect x="188" y="60" width="160" height="200" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b7aM" x="200" y="82">in the log</text>
+        <text class="b7aB" x="200" y="100">grant history:</text>
+        <text class="b7aB" x="200" y="118">role to a human</text>
+        <text class="b7aB" x="200" y="136">outside a window</text>
+        <text class="b7aM" x="200" y="176">detection</text>
+        <text class="b7aQ" x="200" y="194">out_of_window_grant</text>
+        <text class="b7aM" x="200" y="230">the Friday admin</text>
+        <text class="b7aM" x="200" y="246">grant, same day</text>
+
+        <rect x="362" y="20" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b7aT" x="442" y="42" text-anchor="middle">Collection</text>
+        <rect x="362" y="60" width="160" height="200" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b7aM" x="374" y="82">in the log</text>
+        <text class="b7aB" x="374" y="100">query_history:</text>
+        <text class="b7aB" x="374" y="118">SELECT on customers</text>
+        <text class="b7aB" x="374" y="136">above role median</text>
+        <text class="b7aM" x="374" y="176">detection</text>
+        <text class="b7aQ" x="374" y="194">unusual_read</text>
+        <text class="b7aM" x="374" y="230">from session 5,</text>
+        <text class="b7aM" x="374" y="246">reused as written</text>
+
+        <rect x="536" y="20" width="160" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="b7aH" x="616" y="42" text-anchor="middle">Exfiltration</text>
+        <rect x="536" y="60" width="160" height="200" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b7aM" x="548" y="82">in the log</text>
+        <text class="b7aB" x="548" y="100">query_history:</text>
+        <text class="b7aB" x="548" y="118">COPY to a location</text>
+        <text class="b7aB" x="548" y="136">not on the allowlist</text>
+        <text class="b7aM" x="548" y="176">detection</text>
+        <text class="b7aQ" x="548" y="194">unlisted_copy</text>
+        <text class="b7aM" x="548" y="230">flag, not block;</text>
+        <text class="b7aM" x="548" y="246">allowlist has owners</text>
+
+        <rect x="710" y="20" width="156" height="34" rx="8" fill="#FED7AA"></rect>
+        <text class="b7aH" x="788" y="42" text-anchor="middle">Impact</text>
+        <rect x="710" y="60" width="156" height="200" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b7aM" x="722" y="82">in the log</text>
+        <text class="b7aB" x="722" y="100">query_history:</text>
+        <text class="b7aB" x="722" y="118">DROP or purge on</text>
+        <text class="b7aB" x="722" y="136">customers, backups</text>
+        <text class="b7aM" x="722" y="176">detection</text>
+        <text class="b7aQ" x="722" y="194">drop_or_purge</text>
+        <text class="b7aM" x="722" y="230">the ransom note,</text>
+        <text class="b7aM" x="722" y="246">an hour earlier</text>
+
+        <rect x="14" y="292" width="852" height="34" rx="8" fill="#FFF7ED" stroke="#991B1B" stroke-dasharray="5 3"></rect>
+        <text class="b7aR" x="440" y="314" text-anchor="middle">export bucket path: a request to the object store, outside all five lanes; its own log, its own inventory row</text>
+
+        <rect x="14" y="360" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b7aN" x="38" y="372">Five tactics, five queries, one review table. The bucket is watched by the object store's log or by nothing.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - five tactics as five lanes, what each looks like in the log, and the path outside all of them.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The method, in five steps<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Pick a tactic.</strong> Use the ATT&amp;CK v19.2 names, because they are the vocabulary the rest of the industry uses when it describes an incident, and because the list is finite. Fifteen tactics; a warehouse estate needs detections against roughly a third of them.</li>
+          <li><strong>State the hypothesis in your own logs' terms.</strong> "If someone were doing Credential Access with Ironwood's ETL key, login history would show that service account authenticating from a client or address it has never used." If you cannot finish that sentence for a tactic, you either lack the log or the tactic does not apply, and both are findings worth writing down.</li>
+          <li><strong>Write the query.</strong> The hypothesis becomes a WHERE clause and usually a join to a baseline or an allowlist. Keep it read-only over the log until the final step.</li>
+          <li><strong>Decide the threshold, then tune it against history.</strong> Run the query over the last 90 days before scheduling it. Count the rows. Each one either had a real cause or is a reason to sharpen the query.</li>
+          <li><strong>Name the reviewer.</strong> A person, not a channel. A detection with no named reader is a detection that will be read by the incident responder, afterwards.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The five detections that finish Ironwood's graph<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Tactic (v19.2)</th><th>Hypothesis in Ironwood's logs</th><th>Log</th><th>Detection</th></tr></thead>
+          <tbody>
+            <tr><td>Credential Access</td><td>A service account authenticates from a client application or address it has not used in 30 days. The leaked ETL key, used from anywhere but the runner.</td><td>login_history</td><td>new_client_login</td></tr>
+            <tr><td>Privilege Escalation</td><td>A role is granted to a human account outside an agreed change window, with no ticket. The Friday admin grant, the day it happens.</td><td>grant history</td><td>out_of_window_grant</td></tr>
+            <tr><td>Collection</td><td>A role reads customers when it has not in 30 days, above ten times its median rows, or at an hour it never works. Session 5, unchanged.</td><td>query_history</td><td>unusual_read</td></tr>
+            <tr><td>Exfiltration</td><td>A COPY or unload of customers names a destination that is not on the owned allowlist. Session 5, unchanged.</td><td>query_history</td><td>unlisted_copy</td></tr>
+            <tr><td>Impact</td><td>A DROP, TRUNCATE or purge statement names customers or anything in the backup schema. The hour before the ransom note.</td><td>query_history</td><td>drop_or_purge</td></tr>
+          </tbody>
+        </table>
+        <p>Two of the five already exist from session 5. The point of writing the table anyway is the first column: each detection now says which tactic it is a hypothesis about, which is the sentence an incident report needs and the sentence a new engineer needs to know whether the set is complete.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why these five and not the other ten<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>ATT&amp;CK v19.2 lists fifteen enterprise tactics. Five have detections tonight because five correspond to edges on Ironwood's graph that lead to or through the crown jewels. The rest are not ignored; they are either closed by prevention, outside the warehouse, or someone else's log.</p>
+        <ul>
+          <li><strong>Initial Access</strong> at Ironwood is phishing and a public repo. MFA and key rotation closed those edges in session 2; the residual signal is the new-client login, which is why Credential Access is watched rather than Initial Access.</li>
+          <li><strong>Execution and Persistence</strong> live on the CI runner and the laptops, whose logs belong to the platform and endpoint teams. The warehouse sees their consequence, which is a login or a query, and that is where tonight's detections sit.</li>
+          <li><strong>Stealth and Defense Impairment</strong>, the two tactics v19 split out of the old Defense Evasion, would appear in a warehouse as somebody disabling the logging or the scheduled job itself. The right control is that the review table notices when it stops receiving rows; the homework asks for that check.</li>
+          <li><strong>Discovery and Lateral Movement</strong> show up in query history as SHOW and DESCRIBE statements from a role that never issues them, and as a login hopping between roles. Both are reasonable sixth and seventh detections once the first five are quiet.</li>
+          <li><strong>Reconnaissance, Resource Development and Command and Control</strong> happen outside anything the warehouse records. Naming them here is what stops a future engineer from believing the five are the whole picture.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the noise rule, the single review table, what a log cannot attribute, and detections as evidence</span>
+      <h2>Precision, review, and the detection nobody reads</h2>
+      <span class="tag concept">8 min live</span>
+    </div>
+    <p class="lede">Five queries that run are not five detections. A detection exists when it fires seldom enough to be believed, writes to a place one person reads every day, and is honest about what its evidence can and cannot prove. Most detection programmes fail on the first point, quietly, within a quarter.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The detection pipeline as a strip of six stages: log, hypothesis about a tactic, query, threshold tuned on the detection's own history, review table, named reviewer. Below the threshold stage the noise rule is marked: the detection must fire less than once a week without a real cause.">
+        <style>
+          .b7bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .b7bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b7bM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b7bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b7bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b7bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="b7bRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <rect x="14" y="60" width="130" height="40" rx="8" fill="#431407"></rect>
+        <text class="b7bT" x="79" y="85" text-anchor="middle">Log</text>
+        <text class="b7bM" x="14" y="122">login, grant, query</text>
+        <text class="b7bM" x="14" y="136">history you own</text>
+
+        <line x1="146" y1="80" x2="156" y2="80" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b7bAr)"></line>
+
+        <rect x="158" y="60" width="130" height="40" rx="8" fill="#7C2D12"></rect>
+        <text class="b7bT" x="223" y="85" text-anchor="middle">Hypothesis</text>
+        <text class="b7bM" x="158" y="122">one tactic, one</text>
+        <text class="b7bM" x="158" y="136">sentence in log terms</text>
+
+        <line x1="290" y1="80" x2="300" y2="80" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b7bAr)"></line>
+
+        <rect x="302" y="60" width="130" height="40" rx="8" fill="#7C2D12"></rect>
+        <text class="b7bT" x="367" y="85" text-anchor="middle">Query</text>
+        <text class="b7bM" x="302" y="122">WHERE plus a join</text>
+        <text class="b7bM" x="302" y="136">to baseline or list</text>
+
+        <line x1="434" y1="80" x2="444" y2="80" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b7bAr)"></line>
+
+        <rect x="446" y="60" width="130" height="40" rx="8" fill="#FDBA74"></rect>
+        <text class="b7bH" x="511" y="85" text-anchor="middle">Threshold</text>
+        <text class="b7bM" x="446" y="122">tuned on 90 days</text>
+        <text class="b7bM" x="446" y="136">of its own history</text>
+
+        <line x1="578" y1="80" x2="588" y2="80" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b7bAr)"></line>
+
+        <rect x="590" y="60" width="130" height="40" rx="8" fill="#FED7AA"></rect>
+        <text class="b7bH" x="655" y="85" text-anchor="middle">Review table</text>
+        <text class="b7bM" x="590" y="122">all five write here</text>
+        <text class="b7bM" x="590" y="136">tactic, actor, evidence</text>
+
+        <line x1="722" y1="80" x2="732" y2="80" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b7bAr)"></line>
+
+        <rect x="734" y="60" width="130" height="40" rx="8" fill="#431407"></rect>
+        <text class="b7bT" x="799" y="85" text-anchor="middle">Named reviewer</text>
+        <text class="b7bM" x="734" y="122">one person per row</text>
+        <text class="b7bM" x="734" y="136">reads it daily</text>
+
+        <line x1="511" y1="148" x2="511" y2="184" stroke="#991B1B" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#b7bRd)"></line>
+        <rect x="346" y="188" width="330" height="34" rx="8" fill="#FFF7ED" stroke="#991B1B"></rect>
+        <text class="b7bR" x="511" y="210" text-anchor="middle">less than once a week without a real cause</text>
+
+        <rect x="14" y="258" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b7bN" x="38" y="270">Tune until a week's rows fit on one screen. A detection that pages every day is switched off by month two.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - log, hypothesis, query, threshold, table, reviewer, and the noise rule under the threshold.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The precision discipline: less than once a week without a real cause<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Data observability learned the false-page rule the expensive way: a monitor that pages on every late load is muted within a month, and it is muted the month it matters. Security detection inherits the rule with a sharper edge, because the person who stops opening the review table is the person the whole design assumes is there.</p>
+        <ul>
+          <li><strong>Tune against the detection's own history before it goes live.</strong> Run each query over 90 days. Every row it returns is either a real cause you can name or a defect in the query. Fix the defects: a service account whose "new client" is the runner's second address, a change window nobody wrote down, a backup schema whose nightly rotation issues a legitimate DROP.</li>
+          <li><strong>The target is less than one row a week without a real cause.</strong> Not zero. A detection that never fires is either perfect or blind, and the tuning history is how you tell them apart.</li>
+          <li><strong>Tune the join, never the eyes.</strong> Add the runner's second address to the service account's expected clients. Add the rotation job's role to an exception list with an owner and a review date. Do not raise a threshold globally to silence one role; that blinds the detection for every other role.</li>
+          <li><strong>Record every tuning decision with a reason and an owner.</strong> An exception list without owners is the next public bucket.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>One review table, a named reviewer per row, read daily<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Session 5's table took two detections. Tonight's takes five, and the reason for keeping one table rather than five is the reader. One table, one morning read, one place where "reviewed by" and "outcome" get filled in. Five tables become five habits, and habits are what a detection programme actually runs on.</p>
+        <p>Each row carries the tactic it is evidence for, the object it concerns, the actor as the log recorded them, the evidence itself, and the name of the person who owns the answer. The reviewer is chosen per detection, not per row: the platform lead owns new-client logins and drops, the access owner owns out-of-window grants, the data owner of customers owns unusual reads and unlisted copies. Their names are in the job, so a row is born with a reader.</p>
+        <div class="callout tip">
+          <p><strong>The response is a question to the actor's owner, never an accusation.</strong> "Your service account authenticated from a new address at 04:10; was that a planned change?" resolves most rows in one reply. The one that does not resolve is the incident, and the row is its first exhibit.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The honest limits: attribution to a role set, and the bucket outside all five<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Two limits are worth writing next to the detections, because the review table will otherwise be read as saying more than it can.</p>
+        <ul>
+          <li><strong>Query history attributes a read to a user and the roles active in the session, not to the grant that permitted it.</strong> When the analyst read customers with the admin role active, the row says user and role. It does not say whether the read was permitted by the Friday grant, by an older grant to a role the admin role inherits from, or by a direct grant on the table. Answering that needs a join to grant history as of the query's timestamp, and on many platforms the reconstruction is approximate. The review table records what the log recorded; the reviewer's question is what recovers the grant.</li>
+          <li><strong>The export bucket path is outside all five.</strong> A read of the nightly extract is a request to the object store. It is not a login to the warehouse, not a grant, not a SELECT, not a COPY, not a DROP. Session 3 closed that door with a private bucket; the only log that would ever see it being opened again is the object store's own access log, and it needs its own detection with its own reviewer, or an honest blank in the inventory's "seen by" column.</li>
+        </ul>
+        <p>Write both limits into the runbook next to the table. The incident that tests them will not be the moment to discover them.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Detection as evidence: the timeline only these tables hold<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>When an incident is confirmed, the first document anyone asks for is the timeline: when did the credential first authenticate from the new address, when was the role granted, when was the first unusual read, when did the copy leave, when was the backup schema touched. Every one of those timestamps lives in a row one of tonight's detections wrote, or in the underlying history the detection reads.</p>
+        <ul>
+          <li><strong>Retain the review table for longer than the log.</strong> Platform query history is often retained for weeks or a year; the review table is yours and can be kept for as long as the postmortem process needs it.</li>
+          <li><strong>Keep the query text and query identifier on the row.</strong> The evidence column that says "above 10x typical" is a summary; the identifier is what lets the responder pull the exact statement later.</li>
+          <li><strong>The outcome column is part of the record.</strong> "Expected, confirmed by owner on the day" is what turns a row from noise into a documented decision, and a stack of those is what lets a postmortem say the detections were working before the incident, not just after.</li>
+        </ul>
+        <p>What a confirmed exfiltration obliges the company to tell regulators and customers is the governance course; what the first hour looks like and what the report funds is leader session 6. Tonight's contribution to both is that the timeline exists.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Five detections, one review table</h2>
+      <span class="tag demo">★ 20 min · everyone builds</span>
+    </div>
+    <p class="lede">Everything runs against your own warehouse's history views, read-only until the last two steps, which create tables and a scheduled job in a schema you own. The views are written here as <code class="mono">login_history</code>, <code class="mono">role_grant_history</code> and <code class="mono">query_history</code> with generic column names; every platform ships these under its own names, with its own columns for client address, application and statement type, so substitute yours. The session 5 objects <code class="mono">sec.egress_allowlist</code> and the unusual-read query are reused as they were written.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Write the new-client login detection for service accounts (Credential Access).</strong> Start by listing your service accounts in a table with an owner, because "service account" is a business fact the login history does not know. Then flag any successful login by one of them from a client application and address pair it has not used in the last 30 days. The left join against the baseline does the work; a pair with no baseline row is new.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+create table if not exists sec.service_accounts (
+  user_name  varchar,
+  owner      varchar,      -- the human who answers the question
+  purpose    varchar
+);
+
+with known as (
+  select user_name, client_ip, client_application
+  from login_history
+  where event_time between current_date - 30 and current_date - 1
+    and is_success = true
+  group by user_name, client_ip, client_application
+)
+select l.event_time, l.user_name, l.client_ip, l.client_application, s.owner
+from login_history l
+join sec.service_accounts s on s.user_name = l.user_name
+left join known k
+  on k.user_name = l.user_name
+ and k.client_ip = l.client_ip
+ and k.client_application = l.client_application
+where l.event_time >= current_date - 1
+  and l.is_success = true
+  and k.user_name is null;
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Write the out-of-window role grant detection (Privilege Escalation).</strong> Change windows are a table too, with a ticket per window. A grant to a human account, meaning any account not in the service account list, that falls in no window is a row. The Friday afternoon grant at Ironwood matches on the day it is made rather than six weeks later.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+create table if not exists sec.change_windows (
+  starts_at  timestamp,
+  ends_at    timestamp,
+  ticket     varchar,
+  approved_by varchar
+);
+
+select g.granted_at, g.grantee_name, g.role_name, g.granted_by
+from role_grant_history g
+left join sec.service_accounts s on s.user_name = g.grantee_name
+where g.granted_at >= current_date - 1
+  and g.action = 'GRANT'
+  and s.user_name is null                       -- a human, not a service account
+  and not exists (
+    select 1
+    from sec.change_windows w
+    where g.granted_at between w.starts_at and w.ends_at
+  );
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Reuse the session 5 unusual-read detection (Collection).</strong> Nothing changes in the query: a role new to customers in 30 days, above ten times its median rows per query, or at an hour it has never read the table in. What changes is the row it writes, which now carries the tactic name and a reviewer. Keep the query in one place and reference it from the job rather than pasting a second copy that will drift.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write the unlisted-external-location COPY detection against the allowlist (Exfiltration).</strong> Also from session 5, and also reused; the allowlist table is the one that already has owners and review dates on every row. The two additions worth making tonight are to match on the destination the platform recorded where it records one separately from the statement text, and to include shares alongside COPY and unload, because a share is a copy that never shows up as bytes leaving.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+select q.query_id, q.user_name, q.role_name, q.start_time, left(q.query_text, 200) as statement
+from query_history q
+where q.start_time >= current_date - 1
+  and (upper(q.query_text) like 'COPY INTO %'
+       or upper(q.query_text) like '%UNLOAD%'
+       or upper(q.query_text) like 'CREATE SHARE%'
+       or upper(q.query_text) like 'GRANT % TO SHARE%')
+  and lower(q.query_text) like '%customers%'
+  and not exists (
+    select 1
+    from sec.egress_allowlist a
+    where lower(q.query_text) like '%' || lower(a.location_prefix) || '%'
+  );
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Write the DROP-or-purge detection against customers and its backups (Impact).</strong> Statement type is more reliable than text where your platform records it. Name the crown-jewel table and the whole backup schema, because an attacker who drops the schema does not name the tables. Expect the session 6 rotation job to appear on the first run; it goes into an exception list with an owner, not into a wider blind spot.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+create table if not exists sec.destructive_exceptions (
+  role_name  varchar,       -- the backup rotation role, and nothing else
+  owner      varchar,
+  review_by  date
+);
+
+select q.query_id, q.user_name, q.role_name, q.start_time, left(q.query_text, 200) as statement
+from query_history q
+left join sec.destructive_exceptions x on x.role_name = q.role_name
+where q.start_time >= current_date - 1
+  and (q.query_type in ('DROP', 'TRUNCATE_TABLE', 'ALTER_TABLE_DROP_CLUSTERING_KEY')
+       or upper(q.query_text) like 'DROP %'
+       or upper(q.query_text) like '%PURGE%'
+       or upper(q.query_text) like 'TRUNCATE %')
+  and (lower(q.query_text) like '%customers%'
+       or lower(q.query_text) like '%backup%')
+  and x.role_name is null;
+        </div>
+        <p>The statement-type names in the IN list are placeholders for whatever your platform records; keep the text matches as the fallback so a rename in the platform's own vocabulary does not silently blind the detection.</p>
+      </div>
+      <div class="step">
+        <p><strong>Union all five into one scheduled job writing to one review table.</strong> The table has a tactic, an object, an actor, the evidence and a reviewer on every row, plus the two columns a human fills in. The reviewer is set per detection in the job. The scheduler object is a task, a job or a DAG depending on your platform; hourly is fine, the morning read is what matters.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+create table if not exists sec.detection_review (
+  flagged_at   timestamp,
+  tactic       varchar,      -- ATT&amp;CK v19.2 tactic name
+  detection    varchar,
+  object       varchar,      -- customers, backups, a role, a service account
+  actor        varchar,      -- user and active role as the log recorded them
+  evidence     varchar,      -- query id or grant id, plus a one-line summary
+  reviewer     varchar,      -- a named person, set per detection
+  reviewed_at  timestamp,    -- filled in by a human
+  outcome      varchar       -- 'expected', 'question sent', 'incident'
+);
+
+-- the body of the scheduled job: one insert, five branches
+insert into sec.detection_review
+  (flagged_at, tactic, detection, object, actor, evidence, reviewer)
+select current_timestamp, 'Credential Access', 'new_client_login', user_name,
+       user_name, client_application || ' from ' || client_ip, owner
+from ( /* step 1 query */ ) a
+union all
+select current_timestamp, 'Privilege Escalation', 'out_of_window_grant', role_name,
+       grantee_name, 'granted by ' || granted_by || ' at ' || granted_at, 'access owner'
+from ( /* step 2 query */ ) b
+union all
+select current_timestamp, 'Collection', 'unusual_read', 'customers',
+       user_name || ' as ' || role_name, query_id || ': ' || reason, 'customers data owner'
+from ( /* session 5 unusual-read query */ ) c
+union all
+select current_timestamp, 'Exfiltration', 'unlisted_copy', 'customers',
+       user_name || ' as ' || role_name, query_id || ': ' || statement, 'customers data owner'
+from ( /* step 4 query */ ) d
+union all
+select current_timestamp, 'Impact', 'drop_or_purge', 'customers or backups',
+       user_name || ' as ' || role_name, query_id || ': ' || statement, 'platform lead'
+from ( /* step 5 query */ ) e;
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Update the inventory file so every remaining edge has a log.</strong> Name the log and the detection on each row. The bench counts a path as seen when it crosses a logged edge; the file is where you prove which query does the seeing, and the bucket row is where you record the honest blank if the object store's log is not wired yet.</p>
+        <div class="prompt-box good">
+          <span class="label">★ The inventory file, "seen by" filled in</span>
+# from          -> to        | the move                                      | closed by         | seen by
+repo            -> svc_key   | key read out of repo history                  | key rotation      | login_history: new_client_login (Credential Access)
+ci_runner       -> svc_key   | runner environment holds the key              | pinned deps       | login_history: new_client_login (Credential Access)
+user_analyst    -> admin     | admin role granted on a Friday, never revoked | least privilege   | role_grant_history: out_of_window_grant (Privilege Escalation)
+warehouse       -> crown     | SELECT within a role that must read it        | (cannot)          | query_history: unusual_read (Collection)
+crown           -> egress    | COPY INTO an external stage or unload         | allowlist         | query_history: unlisted_copy (Exfiltration)
+admin           -> backups   | drop and purge, time travel included          | immutable backups | query_history: drop_or_purge (Impact)
+bucket_export   -> crown     | nightly extract of the table                  | private bucket    | object store access log: not yet wired
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Run all five over 90 days before you schedule anything.</strong> The first pass tells you which service account has a second legitimate address, which change window nobody wrote down, and which rotation job issues a nightly DROP. Fix each with a row in the right exception table, owned and dated, and only then hand the review table to its readers. A detection handed over while it is loud will be muted, and muted is worse than never written, because the inventory file now says the edge is seen.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 8</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Run steps 1, 2 and 5 over the last 90 days of your own history and count the rows per detection. Anything above roughly a dozen per detection is tuning work, not a finding. Record each tuning decision with an owner and a reason.</li>
+      <li>Fill the service account table and the change window table with what actually exists. Ask each service account's owner to confirm the client and address pairs the baseline found. At least one pair will be news to them.</li>
+      <li>Write a sixth detection with no query: a check that the review table received at least one row from the job in the last 24 hours, and a row when it did not. A job that stops silently is Stealth or Defense Impairment in v19.2 terms, and it is the detection most often missing.</li>
+      <li>Take the one remaining path on your own graph, the one no control can close, and write down the detection, the reviewer and the retention of the review table that make leaving it open defensible. Bring that sentence to session 8; it is what the bench scores.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">The review table shows the analyst read customers with the admin role active. What does query history establish about which grant permitted the read?</p>
+      <button class="qopt" type="button">A · That the Friday grant permitted it, because that is the grant that gave the analyst the admin role</button>
+      <button class="qopt" type="button">B · Only the user and the roles active in the session; which grant among that role set permitted the read needs a join to grant history as of that timestamp, and may be approximate</button>
+      <button class="qopt" type="button">C · Nothing about roles at all; query history records the user and the statement</button>
+      <p class="qwhy">The log attributes a read to a user and their active roles, not to a specific grant. The admin role may hold the permission through an inherited role or a direct table grant. Reconstructing which one needs grant history at the query's timestamp, and the reviewer's question to the owner is what usually settles it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Every prevention control on Ironwood's bench is on and every detection is off. What does the bench read, and why does it matter?</p>
+      <button class="qopt" type="button">A · Zero paths; prevention closed them all, so detection was never needed</button>
+      <button class="qopt" type="button">B · Three paths, three undetected; the insider paths were never closable</button>
+      <button class="qopt" type="button">C · One path, one undetected; the support agent's legitimate read is only defensible as the remaining path because it is logged and reviewed</button>
+      <p class="qwhy">All prevention with no detection leaves one path and one undetected. The finished design leaves the same one path with zero undetected. The path is identical; the difference is whether anyone would know it was used, and that difference is the five detections.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">The drop-or-purge detection fires every night at 02:00 on the session 6 backup rotation job. What is the right fix?</p>
+      <button class="qopt" type="button">A · Add the rotation role to an owned, dated exception table so the detection stays quiet for that role and loud for every other DROP against the backup schema</button>
+      <button class="qopt" type="button">B · Remove the backup schema from the detection, since backups are covered by immutability</button>
+      <button class="qopt" type="button">C · Schedule the detection to skip the 02:00 hour</button>
+      <p class="qwhy">Tune the join, never the eyes. Narrowing the detection to exclude the backup schema or the hour blinds it to exactly the attack it exists for; an exception on the one role, with an owner and a review date, keeps it precise and keeps the decision recorded.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">MITRE ATT&amp;CK v19.2 tactics as detection hypotheses</span>
+        <span class="note">Credential Access, Privilege Escalation, Collection, Exfiltration and Impact, each stated as what it looks like in a warehouse's own logs and turned into a query. The full fifteen and the v19 rename are leader session 3.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Detection engineering method</span>
+        <span class="note">Tactic, hypothesis, query, threshold tuned on the detection's own history, named reviewer. Five detections over login, grant and query history, one review table, one scheduled job.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Undetected 3 to 0, paths unchanged at 3</span>
+        <span class="note">Query logging and egress alerting on the bench; the all-prevention-no-detection over-correction at one path and one undetected; why the finished design's one remaining path is defensible.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Detect function, engineered</span>
+        <span class="note">Possible compromises found and analysed, on one estate, with a reviewer per row. The six functions as a whole are leader session 2.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Grants, role hierarchy and what a role set can prove</span>
+        <span class="note">Named as the attribution limit: a read is attributed to a user and active roles, not to a grant. The grants themselves are the access-control course.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">The incident timeline and the postmortem</span>
+        <span class="note">The review table as the evidence store and its retention. What the first hour and the report look like is leader session 6.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Data-quality monitoring</span>
+        <span class="note">Not covered. The false-page rule is borrowed from the data observability course; the detections here find attacker behaviour, not data defects.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Endpoint, CI and network logs</span>
+        <span class="note">Not covered. Execution and Persistence on the runner and the laptops are somebody else's log; the warehouse sees their consequence as a login or a query.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 7 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Start from the tactic</b><span>Pick a v19.2 tactic, state what it looks like in your logs, write the query, tune the threshold, name the reviewer.</span></div>
+      <div class="cheat-item"><b>Five detections</b><span>new_client_login, out_of_window_grant, unusual_read, unlisted_copy, drop_or_purge. Three logs: login, grant, query history.</span></div>
+      <div class="cheat-item"><b>Paths 3, undetected 3 to 0</b><span>Detection changes nothing about ways in and everything about whether you would know. Prevention alone leaves one path, one undetected.</span></div>
+      <div class="cheat-item"><b>Less than once a week</b><span>Without a real cause. Tune against 90 days of the detection's own history before scheduling it.</span></div>
+      <div class="cheat-item"><b>Tune the join, never the eyes</b><span>Exception tables with owners and review dates. A global threshold raised for one role blinds every role.</span></div>
+      <div class="cheat-item"><b>One table, one reader</b><span>Tactic, object, actor, evidence, reviewer on every row. The reviewer is set per detection; the row is born with a reader.</span></div>
+      <div class="cheat-item"><b>A role set, not a grant</b><span>Query history attributes a read to a user and active roles. Which grant permitted it needs grant history at that timestamp.</span></div>
+      <div class="cheat-item"><b>The bucket is outside all five</b><span>A read of the extract is a request to the object store. Its own log, its own reviewer, or an honest blank in the inventory.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Builder session 7 of 8 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="b6-destructive-events.html">← Builder session 6 · Destructive events</a>
+      <a href="b8-attack-path-bench.html">Builder session 8 · The attack-path bench →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Leader session 5 of 6. Two of Ironwood's paths are reads the business chose to allow, so no prevention control removes them. What a warehouse audit log genuinely records, the export bucket it can never see, and why logging takes undetected paths from 3 to 0 without changing the path count.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Detect what you cannot prevent - learn cyber security with phoebe">
+<meta property="og:description" content="Leader session 5 of 6. Prevention runs out before the paths do. Detection is what covers the rest, and it has a blind spot outside the warehouse.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/a5-detect-what-you-cannot-prevent.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Detect what you cannot prevent - learn cyber security with phoebe">
+<meta name="twitter:description" content="Three paths remain after prevention. Logging makes all three visible. One copy of the data sits where no warehouse log reaches.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Leader session 5 · Detect what you cannot prevent - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Leader session 5 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Leader session 5 of 6</div>
+    <h1>Detect what you <span class="accent">cannot prevent</span></h1>
+    <p class="sub">Every prevention control on Ironwood's ladder closes a door somebody should not have been able to open. Two of the nine paths have no such door. A support agent reading a customer record to answer a ticket, and an analyst querying the table their job requires, are reads the business chose to allow, and no control removes them without stopping the work. Prevention runs out before the paths do. Tonight is about what covers the remainder: what a warehouse audit log genuinely sees, the one copy of the data it can never see, and why a log nobody reads is a dark path with a receipt.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Data and technology leaders</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-22 · What the audit log sees and misses</span>
+      <span class="a3" style="flex:4">22-40 · Build-along: find your dark paths</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits in the leader track</h2>
+    </div>
+    <p class="lede">Session 1 counted nine paths to Ironwood's customers table and marked two of them "cannot be closed". Sessions 2 to 4 spent their time on the seven that can be: the six functions, the kill chain, and the backups an attacker deletes on the way out. Tonight returns to the two that remain when every prevention control is on, and to a third that prevention removes but that teaches the most important lesson about where logs reach. <strong>Ironwood</strong> is still the estate: one warehouse, twelve tables, a customers table worth stealing, and a nightly extract of it sitting in a bucket that the warehouse has never heard of.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> The reason detection is a first-class control and not compliance decoration: at least two paths into every real estate are legitimate reads that prevention cannot touch. Two numbers from Ironwood's ladder: query logging and egress alerting leave the path count at 3 and take the undetected count from 3 to 0, and the over-correction "all prevention, no detection" ends with 1 path that nobody would see used. And a way of counting your own dark paths that takes an afternoon and no tools.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why prevention runs out before the paths do<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A prevention control works by removing a way in that should not have existed: a password with no second factor, a key in a public repository, a bucket anyone can list. Each of those is a mistake, and mistakes can be corrected. But some paths to the crown jewels are not mistakes. The support team reads customer records because that is the job. The analyst queries the table because the dashboard needs it. These paths were designed in, on purpose, by people who understood what they were doing.</p>
+        <p>You can shrink them, with least privilege and row-level policies that show a support agent one customer at a time rather than the whole table. You cannot remove them, because a company that removes them has stopped serving customers. The finished Ironwood design reports one path, not zero, for exactly this reason, and a programme that reports zero has either stopped the work or stopped counting insiders.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's security review rated the support tool's access to customers as "accepted risk, business requirement" and moved on. That was the correct rating and an incomplete sentence. The missing half was whether anyone would know if the access were used at three in the morning, by an account that normally handles nine tickets a day, to read eleven thousand records. The answer, before tonight's controls, was no.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Five words for tonight<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Legitimate path</strong> - a route to the crown jewels that exists because the business decided it should. Cannot be prevented; can be logged and reviewed.</li>
+          <li><strong>Audit log</strong> - the warehouse's own record of who ran which query against which object, when, and from where. Sees every read that passes through the warehouse and nothing that does not.</li>
+          <li><strong>Egress</strong> - data leaving the estate: a copy to an external location, a share to another account, an extract written somewhere else. The second place to watch, because a read that stays inside is a smaller event than a read that leaves.</li>
+          <li><strong>Dark path</strong> - a path to the crown jewels that crosses no log anyone reads. Either there is no log at all, as with Ironwood's export bucket, or there is a log and nobody looks at it, which is a dark path with a receipt.</li>
+          <li><strong>Undetected</strong> - the second column on Ironwood's ladder: how many of the remaining paths are dark. Logging moves it from 3 to 0 while the path count stays at 3.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the two legitimate paths, what the audit log records and does not, and the canon 3 to 0</span>
+      <h2>Two paths no control can close</h2>
+      <span class="tag concept">10 min live</span>
+    </div>
+    <p class="lede">After MFA, key rotation, the private bucket and pinned dependencies, Ironwood has three paths left. One is the Friday admin grant, which least privilege will remove at the end. The other two are a support agent's own legitimate session and an analyst's own login, both reading customers because the business said they may. Those two are why detection exists.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three remaining paths after prevention, starting from a support agent's own session, an analyst's own login and an analyst with the Friday admin grant. All three cross a vertical band labelled query logging on the way to the warehouse and the customers table. Before the band they are three paths, three unseen; after it, three paths, zero unseen. Two of the three are marked legitimate read, cannot be closed.">
+        <style>
+          .a5aT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .a5aW { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a5aM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a5aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .a5aG { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .a5aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+        <defs>
+          <marker id="a5aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <text class="a5aM" x="14" y="22">start</text>
+        <text class="a5aM" x="380" y="22">the logged edge</text>
+        <text class="a5aM" x="530" y="22">the estate</text>
+        <text class="a5aM" x="750" y="22">the prize</text>
+
+        <text class="a5aR" x="340" y="60">unseen</text>
+        <text class="a5aG" x="436" y="60">seen</text>
+        <text class="a5aR" x="530" y="60">before logging: 3 paths, 3 unseen</text>
+        <text class="a5aG" x="530" y="78">after logging: 3 paths, 0 unseen</text>
+
+        <rect x="14" y="100" width="200" height="32" rx="7" fill="#431407"></rect>
+        <text class="a5aT" x="114" y="121" text-anchor="middle">support agent, own session</text>
+        <text class="a5aM" x="14" y="152">legitimate read, cannot be closed</text>
+
+        <rect x="14" y="180" width="200" height="32" rx="7" fill="#431407"></rect>
+        <text class="a5aT" x="114" y="201" text-anchor="middle">analyst, own login</text>
+        <text class="a5aM" x="14" y="232">legitimate read, cannot be closed</text>
+
+        <rect x="14" y="260" width="200" height="32" rx="7" fill="#431407"></rect>
+        <text class="a5aT" x="114" y="281" text-anchor="middle">analyst, Friday admin grant</text>
+        <text class="a5aM" x="14" y="312">privilege, closed later by least privilege</text>
+
+        <rect x="400" y="60" width="26" height="290" rx="4" fill="#7C2D12"></rect>
+        <text class="a5aW" transform="rotate(-90 417 205)" x="417" y="205" text-anchor="middle">query logging</text>
+
+        <line x1="216" y1="116" x2="396" y2="116" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5aAr)"></line>
+        <line x1="216" y1="196" x2="396" y2="196" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5aAr)"></line>
+        <line x1="216" y1="276" x2="396" y2="276" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5aAr)"></line>
+
+        <rect x="530" y="170" width="130" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="a5aW" x="595" y="192" text-anchor="middle">Warehouse</text>
+        <rect x="740" y="170" width="110" height="34" rx="8" fill="#431407"></rect>
+        <text class="a5aW" x="795" y="192" text-anchor="middle">customers</text>
+
+        <line x1="428" y1="116" x2="736" y2="180" stroke="#D9CBC0" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a5aAr)"></line>
+        <line x1="428" y1="196" x2="526" y2="187" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5aAr)"></line>
+        <line x1="428" y1="276" x2="526" y2="194" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5aAr)"></line>
+        <line x1="662" y1="187" x2="736" y2="187" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5aAr)"></line>
+
+        <text class="a5aM" x="436" y="280">what the log records:</text>
+        <text class="a5aM" x="436" y="296">who ran which query</text>
+        <text class="a5aM" x="436" y="312">against which object</text>
+        <text class="a5aM" x="436" y="328">when, and from where</text>
+
+        <text class="a5aM" x="620" y="280">what it cannot record:</text>
+        <text class="a5aM" x="620" y="296">why they ran it</text>
+        <text class="a5aM" x="620" y="312">anything that never</text>
+        <text class="a5aM" x="620" y="328">touched the warehouse</text>
+
+        <rect x="14" y="374" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a5aN" x="38" y="385">Logging changes nothing about the path count and everything about whether anyone would know.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three paths remain after prevention; the logged edge turns all three from unseen to seen without closing any.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why detection is a first-class control and not compliance decoration<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Most audit logging is switched on because a standard asks for it, kept because turning it off would raise a question, and read by nobody. That is logging as decoration, and it has the same effect on an attacker as a camera with no tape in it. The professional argument for detection is different and does not depend on any standard: for the paths that prevention cannot close, a log that somebody reads is the only control there is.</p>
+        <p>Put it on the ladder and the point is exact. Every prevention control on Ironwood's list has been applied and the path count is 3. Two of the three are legitimate reads. Adding query logging and egress alerting does not change the 3, and it is not supposed to. What it changes is the second column: undetected goes from 3 to 0. Before it, an attacker using any of the three paths finishes and nobody knows. After it, all three cross an edge that writes a record, and the record is the control.</p>
+        <table class="clean">
+          <thead><tr><th>Controls on</th><th>Paths to customers</th><th>Unseen</th><th>Recoverable of 12</th></tr></thead>
+          <tbody>
+            <tr><td>+ pinned, verified dependencies (all prevention so far)</td><td>3</td><td>3</td><td>0</td></tr>
+            <tr><td><strong>+ query logging and egress alerting</strong></td><td><strong>3</strong></td><td><strong>0</strong></td><td>0</td></tr>
+            <tr><td>+ immutable, restore-tested backups</td><td>3</td><td>0</td><td>12</td></tr>
+            <tr><td>+ least privilege on the analyst role</td><td>1</td><td>0</td><td>12</td></tr>
+            <tr><td><strong>All prevention, no detection</strong></td><td>1</td><td><strong>1</strong></td><td>12</td></tr>
+          </tbody>
+        </table>
+        <p>The last row is the over-correction. Every prevention control on, the backups immutable, least privilege applied, and no logging: one path remains, and it is one path that nobody would see used. That is a complete prevention programme with a support agent's session as its blind spot, and it is what most well-funded estates look like.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What a warehouse audit log genuinely records<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A warehouse query log is a better instrument than most leaders expect and a narrower one than most vendors imply. It records four things reliably, and understanding the four is what makes it possible to say what it can and cannot see.</p>
+        <ul>
+          <li><strong>Who.</strong> The user or service account that ran the query, and the role it was using. Not the person behind a shared account, which is one reason shared accounts are a finding in their own right.</li>
+          <li><strong>What.</strong> The query text and the objects it touched: which tables, often which columns, and how many rows came back. Eleven thousand rows from customers by an account that normally returns one is visible here.</li>
+          <li><strong>When.</strong> The timestamp, which is what makes three in the morning distinguishable from three in the afternoon, and a burst of two hundred reads distinguishable from a working day of nine.</li>
+          <li><strong>From where.</strong> The network address and the client application. A support tool's account querying from a laptop rather than the support tool is a sentence a log can write and a person can read.</li>
+        </ul>
+        <p>What it cannot record is intent. The log shows a support agent reading a record; it cannot show whether the ticket existed. Detection therefore works on shape, not motive: volume, time, source and object, compared to what that account normally does. And there is a second, larger gap. The warehouse log records what happened in the warehouse. Anything that never touched the warehouse is not a gap in the log; it is outside the log entirely, and Part 2 is about the path that lives there.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Once Ironwood's query log was being read, the first thing it showed was not an attacker. It was a dashboard refreshing the full customers table every five minutes because somebody had set a schedule and forgotten it. That was a cost finding, not a security one, and it paid for the logging work in a month. The second thing it showed, a fortnight later, was the support tool's account querying from an address that was not the support tool.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Shape, not motive: what a reviewer actually looks for<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Because the log cannot see why a query ran, detection on legitimate paths is a comparison between what an account did and what it normally does. Five shapes cover most of what matters, and none of them requires knowing anything about the person.</p>
+        <ul>
+          <li><strong>Volume.</strong> An account that returns tens of rows a day returning tens of thousands.</li>
+          <li><strong>Time.</strong> Activity outside the account's own working pattern, not outside office hours in general, since analysts and pipelines keep odd hours legitimately.</li>
+          <li><strong>Source.</strong> A service account authenticating from a new address or a new client, especially one that looks like a laptop.</li>
+          <li><strong>Object.</strong> An account touching a crown-jewel table it has never touched before, or touching every column when it normally reads two.</li>
+          <li><strong>Egress.</strong> Any read whose result leaves the warehouse: a copy to an external location, a share, an export. Part 2.</li>
+        </ul>
+        <p>Turning these shapes into specific alert rules against specific attacker techniques is detection engineering, which is builder session 7. What a leader needs is the list of shapes, the knowledge that a warehouse log can express all five, and a named person whose job it is to look.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the export bucket blind spot, egress alerting, and why a log nobody reads is a dark path with a receipt</span>
+      <h2>The blind spot that is not in the warehouse</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">Ironwood's nightly extract of the customers table sits in a bucket that anyone with the address could read. The path from the internet to the customer data is two hops long and never touches the warehouse. Every warehouse control, including the logging from Part 1, has no effect on it, and that fact generalises to every copy of the crown jewels that lives anywhere else.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 444" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The warehouse drawn as a box listing six of its controls, MFA, least privilege, key rotation, pinned dependencies, query logging and row and column policies, each marked no effect. Beneath it a path from the internet runs to a public export bucket and on to a copy of the customers table, never entering the warehouse. The copy is fed by a nightly extract job from the customers table. The only control that sees this path is the bucket's own lock and access log.">
+        <style>
+          .a5bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a5bS { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .a5bH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .a5bB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .a5bM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a5bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .a5bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+        <defs>
+          <marker id="a5bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="a5bRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <rect x="250" y="40" width="380" height="250" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <rect x="250" y="40" width="380" height="34" rx="10" fill="#7C2D12"></rect>
+        <text class="a5bT" x="440" y="62" text-anchor="middle">warehouse · every control it has</text>
+
+        <text class="a5bB" x="270" y="104">MFA on every human login</text>
+        <text class="a5bR" x="520" y="104">no effect</text>
+        <text class="a5bB" x="270" y="130">least privilege on roles</text>
+        <text class="a5bR" x="520" y="130">no effect</text>
+        <text class="a5bB" x="270" y="156">service key rotation</text>
+        <text class="a5bR" x="520" y="156">no effect</text>
+        <text class="a5bB" x="270" y="182">pinned dependencies</text>
+        <text class="a5bR" x="520" y="182">no effect</text>
+        <text class="a5bB" x="270" y="208">query logging</text>
+        <text class="a5bR" x="520" y="208">no effect</text>
+        <text class="a5bB" x="270" y="234">row and column policies</text>
+        <text class="a5bR" x="520" y="234">no effect</text>
+        <text class="a5bM" x="270" y="272">all of these live inside the box; the path below never enters it</text>
+
+        <rect x="690" y="150" width="110" height="34" rx="8" fill="#431407"></rect>
+        <text class="a5bT" x="745" y="172" text-anchor="middle">customers</text>
+        <line x1="632" y1="167" x2="686" y2="167" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a5bAr)"></line>
+
+        <line x1="745" y1="186" x2="760" y2="324" stroke="#D9CBC0" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a5bAr)"></line>
+        <text class="a5bM" x="766" y="250">nightly extract</text>
+        <text class="a5bM" x="766" y="266">writes the copy</text>
+
+        <rect x="14" y="150" width="110" height="34" rx="8" fill="#431407"></rect>
+        <text class="a5bT" x="69" y="172" text-anchor="middle">Internet</text>
+
+        <polyline points="69,186 69,345 296,345" fill="none" stroke="#991B1B" stroke-width="1.5" marker-end="url(#a5bRd)"></polyline>
+        <rect x="300" y="328" width="230" height="34" rx="8" fill="#FED7AA"></rect>
+        <text class="a5bH" x="415" y="349" text-anchor="middle">public export bucket</text>
+        <line x1="532" y1="345" x2="656" y2="345" stroke="#991B1B" stroke-width="1.5" marker-end="url(#a5bRd)"></line>
+        <rect x="660" y="328" width="200" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="a5bH" x="760" y="349" text-anchor="middle">customers extract, a copy</text>
+
+        <text class="a5bR" x="300" y="384">never touches the warehouse</text>
+        <text class="a5bM" x="300" y="400">two hops, no login, no warehouse log</text>
+
+        <rect x="660" y="370" width="200" height="24" rx="6" fill="#431407"></rect>
+        <text class="a5bS" x="760" y="386" text-anchor="middle">own lock, own access log</text>
+
+        <rect x="14" y="424" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a5bN" x="38" y="435">Six warehouse controls, zero effect. The copy needs its own lock and its own log.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the export bucket path runs beside the warehouse and never enters it, so nothing the warehouse does can see it.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The export bucket: a path the warehouse will never see<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Somebody at Ironwood set up a nightly job that writes the customers table to an object bucket so a marketing agency's tool could collect it weekly. The bucket was made readable so the tool would work. From that moment there were two copies of the crown jewels, and only one of them was inside anything the security programme looked at.</p>
+        <p>Walk the warehouse's controls down the list and every one of them comes back with the same answer. MFA protects logins; the bucket has no login. Least privilege shapes roles; the bucket has no roles. Query logging records queries; reading a file from a bucket is not a query and produces no row in the warehouse log. Row and column policies mask what a query returns; the extract was written before any of them applied. The path is two hops from the internet to the customer data, and it never enters the box where the controls are.</p>
+        <p>Making the bucket private is the prevention control, and on the ladder it takes Ironwood from 5 paths to 4. The detection lesson is separate and survives the fix: even a private bucket is a copy of the crown jewels outside the warehouse, and it needs its own access log, read by somebody, or its use is invisible by construction.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The general rule: every copy outside the warehouse needs its own log<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The export bucket is the sharp example of a rule that applies to every export, share, replica, extract and backup: a control on the original does nothing for the copy, and a log on the original records nothing that happens to the copy. Each copy of a crown-jewel table gets its own row in the inventory, its own lock, and its own log with a named reader. The reason is not tidiness; it is that the copy is exactly where an attacker goes when the original is well defended, because it is the same data with fewer doors and no camera.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's inventory found the marketing bucket in about ten minutes, by asking one question of each team: where else does a copy of this table live? The answers also turned up a BI tool's extract cache, a partner share set up for a pilot two years earlier, and the backup. Four copies, one log between them, and the log belonged to the original.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Egress: the second place to watch<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A read that stays inside the warehouse is an event. A read whose result leaves is a bigger one, and it has a distinct signature: a COPY to an external location, a share created to another account, an unload to a stage nobody has used before. Egress alerting watches for that moment, because it is the moment data stops being under any of your controls and starts being somebody else's file.</p>
+        <p>The honest framing is visible, not blocked. An estate that blocks every external copy stops its own pipelines, so egress alerting is a record and an alert, not a wall. It is also the reason the ladder's rung is called query logging <em>and</em> egress alerting: the query log sees the read, the egress alert sees the read that left, and the two together are what take the undetected count to 0.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The honest limit: a log nobody reads is a dark path with a receipt<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Everything in Part 1 assumed that when the log writes a record, somebody sees it. Nothing about a log makes that true. A log that is switched on and never read leaves the attacker's path exactly as dark as before, with the one difference that after the incident there will be a very complete account of how it happened. That is a dark path with a receipt, and it is the most common state of audit logging in mid-size companies.</p>
+        <p>Detection is therefore three things, and the log is only the first. The second is a rota: a named person, on a stated cadence, whose job includes reading the alerts and the summary of the log. The third is a review: a periodic check that the rules still match the estate, because tables get added, accounts change and last year's alert for the support tool fires on the wrong account this year. Designing rotas, on-call load and review cadence is a discipline in its own right, and the reliability course covers it at length. What matters here is that detection has a headcount line as well as a tooling line, and a programme that funds only the second has bought receipts.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where the copies hide, and the log each one needs<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Copy of the crown jewels</th><th>Who usually made it</th><th>What sees it being used</th></tr></thead>
+          <tbody>
+            <tr><td>Export to an object bucket for a partner or agency</td><td>Whoever unblocked the partner</td><td>The bucket's own access log, nothing in the warehouse</td></tr>
+            <tr><td>BI tool extract cache</td><td>The BI tool, by default</td><td>The BI tool's own audit log, if it has one</td></tr>
+            <tr><td>Share to another warehouse account</td><td>A pilot that ended and was never closed</td><td>The share's access history on the provider side</td></tr>
+            <tr><td>Replica in an operational system</td><td>An integration team</td><td>That system's log, owned by a different team</td></tr>
+            <tr><td>The backup itself</td><td>The platform team</td><td>The backup account's access log; a read of a backup is an exfiltration too</td></tr>
+          </tbody>
+        </table>
+        <p>Every row has a different log, owned by a different team, in a different format. That is the real cost of copies, and the reason the number of copies is a security metric before it is a storage one.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Find your dark paths</h2>
+      <span class="tag demo">★ 18 min · everyone builds</span>
+    </div>
+    <p class="lede">No tools and no access to anything. A sheet of paper, one crown-jewel table, and four questions to put to whoever runs your warehouse and whoever owns the systems around it. If you have no estate to hand, use Ironwood's and check your count against its state before logging: three legitimate or remaining paths, all dark, plus a bucket nobody had listed.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>List every read of your crown-jewel table that is legitimate and cannot be prevented.</strong> Support tools, analyst roles, dashboards, pipelines that feed other systems. Name the account each one uses. These are the paths that will still be on your count when every prevention control is on, and they are the ones detection exists for.</p>
+      </div>
+      <div class="step">
+        <p><strong>For each, check whether it is logged and who reads the log.</strong> Two separate questions. "Is query logging on" is usually yes. "Who looked at it last week, and what were they looking for" is usually silence. A path with a log and no reader goes on the sheet as dark, with a note that the receipt exists.</p>
+      </div>
+      <div class="step">
+        <p><strong>List every copy of the table outside the warehouse, and whether it has any log at all.</strong> Ask each team one question: where else does a copy of this table live? Exports, shares, extract caches, replicas, the backup. For each copy write down which log would show it being read, and who owns that log. Ironwood found four copies and one log.</p>
+      </div>
+      <div class="step">
+        <p><strong>Count your dark paths.</strong> Every legitimate read with no reader, plus every copy with no log, is one dark path. Write the number next to your path count from session 1. Ironwood before tonight's controls: 3 paths, 3 dark, and a bucket that was not on the count at all. The target is the same number of paths and a zero in the second column.</p>
+      </div>
+    </div>
+
+    <div class="prompt-box bad">
+      <span class="label">✗ The audit answer that is true and sees nothing</span>
+Query logging is enabled on the warehouse and retained for 90 days in line with policy.
+    </div>
+
+    <div class="prompt-box good">
+      <span class="label">★ The same estate, answered as paths and readers</span>
+Legitimate reads of customers that cannot be prevented: 2 (support tool account, analyst role).
+Both logged; alerts reviewed weekly by the platform on-call, last review 3 September 2026.
+Copies of customers outside the warehouse: 4. With their own access log and a named reader: 1.
+Dark paths today: 3. Target next quarter: 0.
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Ask for the reader, not the log.</strong> The most useful sentence a leader can put to a security team is "who read the customers log last week, and what did they look for". If the answer is a name and a shape, detection is real. If the answer is a retention period, it is decoration.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 6</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Put the four build-along questions to whoever runs your warehouse and to the owners of every copy you found, in writing, and keep the replies. Every "it is logged" that is not followed by a name is a dark path with a receipt.</li>
+      <li>Find out which account your support tool uses to read customer records, and what a normal day looks like for it: how many reads, from which address, at which hours. That baseline is what a reviewer compares against, and it costs nothing to write down.</li>
+      <li>Count your copies of the crown jewels outside the warehouse and put the number next to Ironwood's four. Then count how many have a log with a named reader.</li>
+      <li>Write your dark-path count as one line under the three numbers from session 1. A programme that can state paths, unseen and recoverable has a complete answer for session 6, where the first hour of an incident begins with exactly those numbers.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">A support agent's own legitimate session reads the customers table. Which control removes that path?</p>
+      <button class="qopt" type="button">A · MFA on the support agent's login, because it stops a phished attacker using the session</button>
+      <button class="qopt" type="button">B · None, without stopping the work; it stays on the count, logged, and a named person reviews the log for shape</button>
+      <button class="qopt" type="button">C · Least privilege, which removes the support team's read access to customers</button>
+      <p class="qwhy">The read exists because the business decided it should. MFA protects the login from outsiders and least privilege can narrow the read, but neither removes a path the job requires. Detection is the only control left, which is why the finished Ironwood design reports one path, logged.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Ironwood switches on full query logging for the customers table. What does that do to the export bucket path?</p>
+      <button class="qopt" type="button">A · Makes it visible, because the nightly extract job's query now appears in the log</button>
+      <button class="qopt" type="button">B · Closes it, because logged paths are no longer counted as open</button>
+      <button class="qopt" type="button">C · Nothing: reading a file from the bucket never touches the warehouse, so the copy needs its own access log and its own reader</button>
+      <p class="qwhy">The extract job's write may appear in the log, but the attacker's read of the bucket is not a warehouse query and produces no record there. Every copy of the crown jewels outside the warehouse needs its own lock and its own log, and nothing inside the warehouse can substitute.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">On Ironwood's ladder, what does the state "all prevention, no detection" look like, and what does adding query logging and egress alerting change on the way to it?</p>
+      <button class="qopt" type="button">A · All prevention, no detection ends at 1 path, 1 unseen; logging leaves the path count at 3 and takes unseen from 3 to 0</button>
+      <button class="qopt" type="button">B · All prevention, no detection ends at 0 paths; logging reduces the path count from 3 to 1</button>
+      <button class="qopt" type="button">C · All prevention, no detection ends at 3 paths, 3 unseen; logging closes two of them</button>
+      <p class="qwhy">Logging never changes the path count; it changes whether anyone would know. With every prevention control on and no logging, one path remains and nobody would see it used: the support session, a complete prevention programme's blind spot.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">What the warehouse audit log sees and misses</span>
+        <span class="note">Who, what, when, from where; not why, and nothing that never touched the warehouse. Detection on legitimate paths as shape, not motive.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">The export bucket blind spot</span>
+        <span class="note">A copy of the crown jewels outside the warehouse, invisible to every warehouse control. The general rule: every copy needs its own lock, its own log and a named reader.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Undetected 3 to 0, and the all-prevention over-correction</span>
+        <span class="note">Query logging and egress alerting leave paths at 3 and take unseen to 0; all prevention with no detection ends at 1 path, 1 unseen.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Egress logs and external copies</span>
+        <span class="note">Named as the second place to watch, visible not blocked. Reading query history and egress logs for exfiltration is builder session 5.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Detection engineering</span>
+        <span class="note">The five shapes a reviewer looks for. Turning attacker techniques into specific log rules is builder session 7.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Rotas, on-call load and review cadence</span>
+        <span class="note">Named as the headcount half of detection. Designed properly in the reliability course.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Detecting data defects</span>
+        <span class="note">Not covered by design. Freshness, volume and schema monitoring belong to the data observability course; tonight's logs watch for attacker behaviour, not broken pipelines.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Attacking models, prompts and agents</span>
+        <span class="note">Not covered by design. Model-side threats belong to the AI red-team course; this is the estate underneath.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 5 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Prevention runs out first</b><span>Two of Ironwood's paths are reads the business chose to allow. No control removes them without stopping the work.</span></div>
+      <div class="cheat-item"><b>3 paths, 3 to 0 unseen</b><span>Query logging and egress alerting leave the path count at 3 and take undetected from 3 to 0.</span></div>
+      <div class="cheat-item"><b>All prevention, no detection</b><span>Ends at 1 path, 1 unseen. A complete prevention programme with a support session as its blind spot.</span></div>
+      <div class="cheat-item"><b>What the log sees</b><span>Who, what, when, from where. Not why. Detection on legitimate paths is shape against baseline, not motive.</span></div>
+      <div class="cheat-item"><b>What the log cannot see</b><span>Anything that never touched the warehouse. The export bucket path is outside the log, not a gap in it.</span></div>
+      <div class="cheat-item"><b>Every copy, its own log</b><span>Exports, shares, extract caches, replicas, the backup. Own lock, own log, named reader. Ironwood: four copies, one log.</span></div>
+      <div class="cheat-item"><b>Egress, visible not blocked</b><span>A copy to an external location is the moment data leaves. Alert on it; do not wall it, or the pipelines stop.</span></div>
+      <div class="cheat-item"><b>A log nobody reads</b><span>Is a dark path with a receipt. Detection is a log, a rota and a review, and it has a headcount line.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Leader session 5 of 6 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="a4-backups-attack-surface.html">← Leader session 4 · Backups are attack surface too</a>
+      <a href="a6-first-hour.html">Leader session 6 · The first hour, and the report →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

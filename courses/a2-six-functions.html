@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Leader session 2 of 6. The six functions of NIST CSF 2.0 put onto one data estate: who owns the customers table, what is inventoried, what is protected, what is logged, what happens in the first hour, and what survives an attacker with the admin login. Why three functions get the budget and two get none.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Six functions, one estate - learn cyber security with phoebe">
+<meta property="og:description" content="Leader session 2 of 6. Govern, Identify, Protect, Detect, Respond, Recover, each landed on a warehouse, and the two that starve.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/a2-six-functions.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Six functions, one estate - learn cyber security with phoebe">
+<meta name="twitter:description" content="NIST CSF 2.0 on a data estate: the three functions that absorb the money, the two that move numbers a control count cannot show.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Leader session 2 · Six functions, one estate - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Leader session 2 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Leader session 2 of 6</div>
+    <h1>Six functions, <span class="accent">one estate</span></h1>
+    <p class="sub">Every security budget request arrives wearing a framework. The one most of them wear is the NIST Cybersecurity Framework, and version 2.0 of it has six functions with plain names: Govern, Identify, Protect, Detect, Respond, Recover. The names are useful precisely because they are plain. Put them next to one warehouse and each becomes a question a leader can ask on a Tuesday: who owns this table, what have we listed, what have we closed, what would we see, what happens in the first hour, and what survives if the admin login is lost. Ironwood could answer one of the six. By the end of the hour you will know which of yours have money, which have words, and which have neither.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Foundational</span>
+      <span class="chip audience">Data and technology leaders</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:6">3-24 · NIST CSF 2.0 on a data estate</span>
+      <span class="a3" style="flex:4">24-40 · Build-along: map your estate to six functions</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits in the leader track</h2>
+    </div>
+    <p class="lede">Six sessions, 45 minutes each, no code and no SQL. Session 1 counted the paths: nine routes to Ironwood's customers table before any control, all unseen, backups reachable from the admin login. Tonight takes the most widely used security framework and lands it on that same estate, so that the six words on every budget slide turn back into the things they stand for. Session 3 walks the kill chain through a data stack, session 4 is backups as attack surface, session 5 is detecting what cannot be prevented, and session 6 is the first hour and the report. <strong>Ironwood</strong>, the fictional mid-size retailer with one warehouse, one customers table and one set of backups, is the estate throughout.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> The six functions of NIST CSF 2.0, each translated into one concrete thing on a data estate, with the date the framework was published so nobody can wave an older version at you. A one-page map of your own estate marked funded, partly funded or absent per function. And the argument, in numbers from Ironwood, for why the two functions that usually get nothing are the two that move the numbers a control count cannot show.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why a framework at all, and why this one<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A framework is a shared vocabulary between the people who run the estate and the people who fund it. Without one, every conversation about security starts from a vendor's product categories, and vendors sell prevention. With one, the same conversation has six fixed headings, and the two headings nobody is selling anything under still have to be filled in.</p>
+        <p>The NIST Cybersecurity Framework is the one most boards, auditors and insurers already recognise, which is the whole reason to use it: the value of a vocabulary is who else speaks it. Version 2.0 was published on 26 February 2024 and has six Core Functions. Version 1.1 had five. The sixth, Govern, was added because two decades of incidents kept showing the same pattern: the technical controls existed, and nobody owned them.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's security budget slide had five coloured boxes, one per function of the older framework, each with a percentage complete. Protect read 78 percent. Detect read 60 percent, and the 60 was a log that existed and that nobody read. Recover read 100 percent because nightly backups ran. The slide was accurate and the estate had nine open paths, zero of them seen, zero tables recoverable. Percentages complete measure effort. Functions are supposed to measure outcomes.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Six words, and the question each one asks of a warehouse<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Govern</strong> - who owns the customers table, who may approve an exception to a rule, and who decides what gets funded.</li>
+          <li><strong>Identify</strong> - what exists. Every account, key, bucket, export and runner that can reach the table, and every copy of the table that lives outside the warehouse.</li>
+          <li><strong>Protect</strong> - what has been closed. The controls that remove a path: MFA, key rotation, private buckets, pinned dependencies, least privilege.</li>
+          <li><strong>Detect</strong> - what would be seen. The query log and the egress alert, and the person who reads them.</li>
+          <li><strong>Respond</strong> - what happens in the first hour after something is seen: which credential is revoked, what is isolated, who is told.</li>
+          <li><strong>Recover</strong> - what survives an attacker who reaches the admin login. A copy of the data that login cannot delete, and proof that it restores.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the six functions of NIST CSF 2.0 and what each one means on a data estate</span>
+      <h2>Six functions, published 26 February 2024</h2>
+      <span class="tag concept">12 min live</span>
+    </div>
+    <p class="lede">NIST CSF 2.0 defines six Core Functions. Each has a two-letter code and a one-sentence definition, quoted below as the framework states them. The definitions are written for any organisation; the work is translating each into the one thing it means for a warehouse with a customers table in it. Govern wraps the other five, which is how the framework draws it and how it behaves in practice.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The six functions of NIST CSF 2.0 drawn as a row of five tiles, Identify, Protect, Detect, Respond and Recover, wrapped by a band labelled Govern. Each tile carries its meaning on a data estate.">
+        <style>
+          .a2aT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a2aS { font: 400 11px Inter, sans-serif; fill: #fff; }
+          .a2aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .a2aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+
+        <rect x="14" y="20" width="852" height="240" rx="12" fill="#431407"></rect>
+        <text class="a2aT" x="30" y="44">GOVERN (GV)</text>
+        <text class="a2aS" x="30" y="62">who owns the customers table, who approves an exception, what gets funded</text>
+
+        <rect x="30" y="76" width="152" height="32" rx="8" fill="#7C2D12"></rect>
+        <text class="a2aT" x="106" y="97" text-anchor="middle">IDENTIFY (ID)</text>
+        <rect x="30" y="108" width="152" height="130" rx="8" fill="#FFF7ED"></rect>
+        <text class="a2aB" x="42" y="130">the inventory:</text>
+        <text class="a2aB" x="42" y="148">every account, key,</text>
+        <text class="a2aB" x="42" y="166">bucket, export and</text>
+        <text class="a2aB" x="42" y="184">runner, and every</text>
+        <text class="a2aB" x="42" y="202">copy of the table</text>
+
+        <rect x="197" y="76" width="152" height="32" rx="8" fill="#7C2D12"></rect>
+        <text class="a2aT" x="273" y="97" text-anchor="middle">PROTECT (PR)</text>
+        <rect x="197" y="108" width="152" height="130" rx="8" fill="#FFF7ED"></rect>
+        <text class="a2aB" x="209" y="130">MFA on every login,</text>
+        <text class="a2aB" x="209" y="148">rotated keys,</text>
+        <text class="a2aB" x="209" y="166">private buckets,</text>
+        <text class="a2aB" x="209" y="184">pinned packages,</text>
+        <text class="a2aB" x="209" y="202">least privilege</text>
+
+        <rect x="364" y="76" width="152" height="32" rx="8" fill="#7C2D12"></rect>
+        <text class="a2aT" x="440" y="97" text-anchor="middle">DETECT (DE)</text>
+        <rect x="364" y="108" width="152" height="130" rx="8" fill="#FFF7ED"></rect>
+        <text class="a2aB" x="376" y="130">query logging on</text>
+        <text class="a2aB" x="376" y="148">the warehouse,</text>
+        <text class="a2aB" x="376" y="166">egress alerting,</text>
+        <text class="a2aB" x="376" y="184">and a person who</text>
+        <text class="a2aB" x="376" y="202">reads the log</text>
+
+        <rect x="531" y="76" width="152" height="32" rx="8" fill="#7C2D12"></rect>
+        <text class="a2aT" x="607" y="97" text-anchor="middle">RESPOND (RS)</text>
+        <rect x="531" y="108" width="152" height="130" rx="8" fill="#FFF7ED"></rect>
+        <text class="a2aB" x="543" y="130">the first hour:</text>
+        <text class="a2aB" x="543" y="148">revoke the key,</text>
+        <text class="a2aB" x="543" y="166">contain the login,</text>
+        <text class="a2aB" x="543" y="184">decide who is told,</text>
+        <text class="a2aB" x="543" y="202">all decided before</text>
+
+        <rect x="698" y="76" width="152" height="32" rx="8" fill="#7C2D12"></rect>
+        <text class="a2aT" x="774" y="97" text-anchor="middle">RECOVER (RC)</text>
+        <rect x="698" y="108" width="152" height="130" rx="8" fill="#FFF7ED"></rect>
+        <text class="a2aB" x="710" y="130">a backup the admin</text>
+        <text class="a2aB" x="710" y="148">login cannot delete,</text>
+        <text class="a2aB" x="710" y="166">restore-tested</text>
+        <text class="a2aB" x="710" y="184">before the day it</text>
+        <text class="a2aB" x="710" y="202">is needed</text>
+
+        <rect x="14" y="286" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a2aN" x="38" y="297">Govern is new in 2.0. The other five kept failing for organisational reasons, not technical ones.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - six functions of NIST CSF 2.0, Govern wrapping the other five, each landed on a data estate.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Govern: who owns the table, who approves the exception<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>GOVERN (GV)</strong> - the organization's cybersecurity risk management strategy, expectations and policy are established, communicated and monitored. On a data estate this is three names. Who owns the customers table, meaning who answers for it when it is read by the wrong person. Who may approve an exception to a rule, such as granting an analyst the admin role to unblock a Friday deployment, and for how long. And who decides which of the other five functions gets money this year.</p>
+        <p>Govern is the function that was added in version 2.0. In the 1.1 framework governance sat as a category inside Identify, and in practice it was treated as paperwork. The reason it was promoted is visible in almost every post-incident report: the technical control existed and was switched off, bypassed or never finished, because no named person owned the outcome. Ironwood's Friday admin grant was a Protect failure on the day and a Govern failure for the two years it stayed in place. Nobody had been given the job of taking grants back.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Asked who owned the customers table, Ironwood produced three answers: the platform team, because they ran the warehouse; marketing, because they used it most; and the data protection officer, because the policy named them. Three owners is zero owners. The export bucket that copied the table nightly had been created by none of the three and was known to none of them.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Identify: the inventory, including the copies<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>IDENTIFY (ID)</strong> - the organization's current cybersecurity risks are understood. On a data estate this is the inventory the builder track draws in its first session: every account, key, bucket, export and runner that can reach the crown-jewel table, written as nodes and edges, and every copy of that table living outside the warehouse. Understanding the risk means being able to count the paths, which means having listed the things the paths run through.</p>
+        <p>Identify is where a checklist and a graph part ways. Ironwood's hardening checklist was 31 of 40 items green, and the door that mattered, a service key in a public repository two years old and still valid, was on no line of it. An inventory that skips the credential lane, or the storage lane where the export bucket lives, produces a confident number that is wrong. Nine paths is the honest count for Ironwood, and it took one afternoon of walking five lanes to reach it.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Protect: the controls that remove a path<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>PROTECT (PR)</strong> - safeguards to manage the organization's cybersecurity risks are used. On a data estate, Protect is the short list of controls that each remove at least one path from the graph. MFA on every human login takes Ironwood from nine paths to six. Rotating service keys and expiring the old ones, six to five. Making the export bucket private, five to four. Pinning and verifying every dependency the pipelines run, four to three. Least privilege on the analyst role, at the end, three to one.</p>
+        <p>Protect is the function everyone recognises, because it is the one that maps onto products and the one the questionnaire asks about. It is also the function that runs out: after all of it, one path remains, the support agent's legitimate read of a customer record, and no Protect control can remove it without stopping the work.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Detect: the log, and the person who reads it<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>DETECT (DE)</strong> - possible cybersecurity attacks and compromises are found and analyzed. On a data estate this is two logs and one person. Query logging on the warehouse records every read of the customers table, whoever made it. Egress alerting watches the point where data leaves, so that a copy to an external stage raises a flag. The person is the part most estates skip: a log nobody reads detects nothing, and Ironwood's audit log had been switched on for four years and opened twice.</p>
+        <p>Detect changes a number that Protect cannot touch. With every Protect control on except least privilege, Ironwood has three paths, three of them unseen. Query logging and egress alerting leave the count at three and take unseen from three to zero. The path count did not move, which is exactly why this rung is so often skipped, and exactly why session 5 exists.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Respond: the first hour, decided in advance<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>RESPOND (RS)</strong> - actions regarding a detected cybersecurity incident are taken. On a data estate the first hour is a short list of decisions that are far easier to make before the hour than during it. Which credential is revoked first, and what breaks when it is. Whether the warehouse is taken offline, and who may say so. Which log is preserved before anyone touches anything. Who inside the company is told, and who outside.</p>
+        <p>The last decision, who outside must be notified and by when, is a matter of law and regulation and belongs to the data-governance course, where breach notification duties are taught properly. Session 6 covers the technical containment decisions and the report that follows. What Respond asks of a leader tonight is one thing: that the list exists, on paper, with names, before it is needed.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Recover: what survives an attacker with the admin login<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>RECOVER (RC)</strong> - assets and operations affected by a cybersecurity incident are restored. On a data estate this is one question with an uncomfortable usual answer: can the login that reads the warehouse also delete the backups? Warehouse time travel and snapshots are kept by the account that owns them, so an attacker holding the admin login purges them along with the tables. They are a convenience against mistakes, not a backup against the account being taken.</p>
+        <p>The professional norm is a copy the admin login cannot delete, stored where the warehouse's own credentials do not reach, immutable for a fixed retention, and restored from on a schedule to prove it works. At Ironwood that control takes recoverable tables from 0 of 12 to 12 of 12. It moves nothing on the path count. Session 4 is about this function alone.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers how the budget lands across the six functions, and what the bench says about it</span>
+      <h2>Why three of the six get all the money, and which two get none</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">Ask any mid-size company where its security spend went and the answer is Protect, with some Identify and some Respond in the form of an incident retainer. Detect and Recover are the functions most often reported as complete and least often funded, because the thing they change is not the number on the slide. Ironwood's attack-path bench puts figures on that.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three tiles for Protect, Detect and Recover. Protect moves paths from 9 to 3. Detect moves undetected paths from 3 to 0 with paths unchanged. Recover moves recoverable tables from 0 to 12 with paths unchanged. A note says a control count can show only the first.">
+        <style>
+          .a2bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a2bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .a2bK { font: 800 28px Inter, sans-serif; fill: #1C1210; }
+          .a2bB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .a2bM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a2bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .a2bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+
+        <rect x="14" y="20" width="260" height="36" rx="8" fill="#431407"></rect>
+        <text class="a2bT" x="144" y="43" text-anchor="middle">PROTECT · gets the budget</text>
+        <rect x="14" y="56" width="260" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a2bM" x="30" y="82">paths to the customers table</text>
+        <text class="a2bK" x="30" y="122">9 to 3</text>
+        <text class="a2bB" x="30" y="152">MFA, rotated keys, private bucket,</text>
+        <text class="a2bB" x="30" y="170">pinned dependencies</text>
+        <text class="a2bB" x="30" y="200">least privilege at the end: 3 to 1</text>
+        <text class="a2bM" x="30" y="236">a control count shows this move,</text>
+        <text class="a2bM" x="30" y="252">so it gets funded</text>
+
+        <rect x="310" y="20" width="260" height="36" rx="8" fill="#FED7AA"></rect>
+        <text class="a2bH" x="440" y="43" text-anchor="middle">DETECT · usually starves</text>
+        <rect x="310" y="56" width="260" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a2bM" x="326" y="82">undetected paths</text>
+        <text class="a2bK" x="326" y="122">3 to 0</text>
+        <text class="a2bB" x="326" y="152">query logging on the warehouse</text>
+        <text class="a2bB" x="326" y="170">and egress alerting</text>
+        <text class="a2bR" x="326" y="200">paths stay at 3. Slide unchanged.</text>
+        <text class="a2bM" x="326" y="236">skip it and the finished design</text>
+        <text class="a2bM" x="326" y="252">ends at 1 path, unseen</text>
+
+        <rect x="606" y="20" width="260" height="36" rx="8" fill="#FED7AA"></rect>
+        <text class="a2bH" x="736" y="43" text-anchor="middle">RECOVER · usually starves</text>
+        <rect x="606" y="56" width="260" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a2bM" x="622" y="82">recoverable tables of 12</text>
+        <text class="a2bK" x="622" y="122">0 to 12</text>
+        <text class="a2bB" x="622" y="152">immutable, restore-tested backups</text>
+        <text class="a2bB" x="622" y="170">the admin login cannot delete</text>
+        <text class="a2bR" x="622" y="200">paths stay at 3. Slide unchanged.</text>
+        <text class="a2bM" x="622" y="236">nightly snapshots read as done,</text>
+        <text class="a2bM" x="622" y="252">and go with the account</text>
+
+        <rect x="14" y="306" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a2bN" x="38" y="317">Two of the three numbers move while the path count stands still. A control count cannot show either.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three functions, three bench numbers; only the first is visible on a list of controls.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Protect absorbs the budget because it is the function that can be bought<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three things pull spend toward Protect. It is the function vendors sell, so every proposal that arrives is a Protect proposal. It is the function the questionnaire asks about, so it is the one that produces a defensible sentence. And it is the function whose progress a control count can show: MFA on, keys rotated, bucket private, four items green. Ironwood spent on Protect for three years and the spend was not wasted; it took nine paths to three.</p>
+        <p>The problem is not that Protect is funded. It is that the count of controls switched on is taken as the measure of the whole programme, and two of the six functions move nothing on that count no matter how well they are done.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Detect: the rung where the headline number does not move<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Read Ironwood's bench from the top. Nothing on: nine paths, nine unseen. MFA: six and six. Key rotation: five and five. Private bucket: four and four. Pinned dependencies: three and three. Then query logging and egress alerting: three paths, and zero unseen. The path count did not change by one. On a slide that reports controls or paths, that rung is invisible, which is why in most estates it never gets built.</p>
+        <p>What it changed is the only thing that matters about the three paths that remain. Before it, an attacker completing any of them finishes and nobody knows. After it, every one of them crosses a logged edge. Detect is the function that turns a residual path from a silent loss into an incident someone can respond to, and it is the only function that can do anything at all about the two legitimate-read paths that Protect can never close.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Recover: from 0 of 12 tables to 12 of 12, with paths unchanged<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The next rung on the bench is immutable, restore-tested backups. Paths stay at three, unseen stays at zero, and recoverable tables go from 0 of 12 to 12 of 12. Again nothing visible on a control-count slide, and again the only number that would matter on a particular Monday morning.</p>
+        <p>Recover starves for a different reason than Detect. Detect is skipped because it looks like nothing happened. Recover is skipped because it looks like it is already done: nightly snapshots run, the backup line on the questionnaire says yes, and nobody asks whether the same login that reads the warehouse can delete the copy. At Ironwood it could. The recoverable count was zero for the whole time the backup box was ticked.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's restore drill, when it was finally run, took four hours longer than the recovery-time objective in the policy, because nobody had restored the largest table since the warehouse was migrated and the storage tier it sat on had changed. That gap had been invisible for two years, under a green box, because a backup that has not been restored from is a hypothesis.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>All prevention, no detection: one path, unseen<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The bench has a row for an estate that funds Protect and Recover completely and Detect not at all. Every prevention control on, immutable backups on, no logging: one path to the customers table, one unseen, 12 of 12 recoverable. The one path is the support agent's legitimate read, the path no prevention control can remove. Without Detect it is also the path nobody would ever see used.</p>
+        <p>That row is the argument in a single line. Prevention runs out before the paths do, and the path it leaves behind is exactly the one that only a log can defend. An estate that spends everything on Protect has, at its very best, one door it cannot close and has chosen not to watch.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Govern is the function that decides whether the other five get funded at all<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>None of the above is a technical finding. Ironwood's platform team knew the audit log was unread and knew the snapshots went with the account. What was missing was a named person with the authority to say that the next pound goes to Detect and Recover rather than to the fifth Protect product, and a measure that would show the board why. That is Govern.</p>
+        <p>The practical form of Govern on a data estate is short: an owner per crown-jewel table, an approver for every exception with an expiry date on the exception, and a reporting line that carries three numbers rather than a control count. Paths remaining, paths unseen, tables recoverable. Once those three numbers are what the board sees, Detect and Recover fund themselves, because they are the only functions that move two of them.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Map your estate to six functions</h2>
+      <span class="tag demo">★ 16 min · everyone builds</span>
+    </div>
+    <p class="lede">One sheet, six rows, no tools. If you have no estate to hand, use Ironwood as it stood before any control: nine paths, nine unseen, zero recoverable, three people who each thought someone else owned the table. The output is a page you could put in front of whoever holds the budget.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Write one sentence per function, about your estate, in concrete nouns.</strong> Not "we have governance" but "the customers table is owned by the head of platform, who approves exceptions for at most 30 days". If a sentence cannot name a person, a control or a log, write "none" and move on. "None" is a finding, not a failure of the exercise.</p>
+      </div>
+      <div class="step">
+        <p><strong>Mark each row funded, partly funded or absent.</strong> Funded means money and a named owner this year. Partly funded means one of the two. Absent means the sentence said none. Most estates land Protect funded, Identify and Respond partly, Detect and Recover absent, Govern unmarked because nobody thought of it as a thing that could be funded.</p>
+      </div>
+      <div class="step">
+        <p><strong>Put the three bench numbers next to Protect, Detect and Recover.</strong> Paths remaining next to Protect. Paths unseen next to Detect. Tables recoverable if the admin login is lost next to Recover. Use your session 1 count, or Ironwood's nine, nine and zero if you are working from the example. A guess marked as a guess is fine.</p>
+      </div>
+      <div class="step">
+        <p><strong>Find the function with the biggest gap between what its sentence says and what exists.</strong> Usually it is Recover, where the sentence says "backed up nightly" and the number says zero recoverable. Sometimes Detect, where the sentence says "access is logged" and the log has never been opened. That gap is the first conversation to have.</p>
+      </div>
+      <div class="step">
+        <p><strong>Put a name against Govern.</strong> One person who owns the crown-jewel table and one who approves exceptions, even if tonight they are the same person and it is you. Three owners is zero owners; one owner is a function.</p>
+      </div>
+    </div>
+
+    <div class="prompt-box bad">
+      <span class="label">✗ Six sentences that name controls and say nothing</span>
+Govern: we have a security policy.
+Identify: we did a risk assessment.
+Protect: we have a firewall and role-based access.
+Detect: access is logged.
+Respond: we have an incident response plan.
+Recover: data is backed up nightly.
+    </div>
+
+    <div class="prompt-box good">
+      <span class="label">★ The same estate, six sentences that carry a number or a name</span>
+Govern: no single owner of the customers table; exceptions approved by whoever is asked. Absent.
+Identify: five lanes walked once; one export bucket found that nobody knew about. Partly funded.
+Protect: firewall and roles, no MFA, keys never rotated. Paths: 9. Funded.
+Detect: audit log on since 2022, opened twice. Paths unseen: 9. Absent.
+Respond: a plan from 2021 with two names that have left. Partly funded.
+Recover: nightly snapshots, deletable by the admin login. Recoverable: 0 of 12. Absent.
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Read the six sentences aloud to the person who holds the budget.</strong> The second version does the arguing by itself. Nobody who hears "recoverable: 0 of 12" under a green backup box asks for another prevention product first.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 3</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Take your six sentences to the person who runs the warehouse and ask them to correct each one. Keep both versions. Where the two disagree is where the estate and the slide have parted company.</li>
+      <li>Find the most recent security budget or roadmap and sort every line item into one of the six functions. Count the lines and the money under each. Write the two counts for Detect and Recover on the same page as their bench numbers.</li>
+      <li>Ask, in writing, whether the login that reads the warehouse can delete the backups. If the answer contains the words snapshot or time travel, the answer is yes, and the Recover row is absent regardless of what the questionnaire says.</li>
+      <li>Ask who last opened the audit log, and when. The date is the Detect row.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">NIST CSF 2.0 added a sixth function to the five in version 1.1. Which one, and why?</p>
+      <button class="qopt" type="button">A · Detect, because logging had become cheap enough to require</button>
+      <button class="qopt" type="button">B · Govern, because the other five kept failing for organisational reasons: controls existed and nobody owned them</button>
+      <button class="qopt" type="button">C · Recover, because ransomware made backups a distinct concern</button>
+      <p class="qwhy">Version 2.0, published 26 February 2024, promoted Govern to a function of its own. Detect and Recover were already functions in 1.1. The pattern behind the change is Ironwood's Friday admin grant: a Protect failure on the day, a Govern failure for the two years nobody had the job of taking it back.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">On Ironwood's bench, switching on query logging and egress alerting takes the estate from three paths and three unseen to three paths and zero unseen. Why does this rung so often go unfunded?</p>
+      <button class="qopt" type="button">A · Because logging is more expensive than MFA and key rotation combined</button>
+      <button class="qopt" type="button">B · Because it removes the two legitimate-read paths, which upsets the support team</button>
+      <button class="qopt" type="button">C · Because the path count does not move, so on a slide that reports controls or paths the rung is invisible</button>
+      <p class="qwhy">Detect changes the number a control count cannot show. Every one of the three remaining paths now crosses a logged edge, including the two that no Protect control can close, and nothing visible on the headline changed.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">Ironwood's questionnaire says data is backed up nightly. Its bench says 0 of 12 tables recoverable. Which statement about Recover reconciles the two?</p>
+      <button class="qopt" type="button">A · Snapshots and time travel are deleted with the account that owns them, so an attacker holding the admin login purges the backup along with the tables</button>
+      <button class="qopt" type="button">B · The backups are real but the restore takes longer than the policy allows</button>
+      <button class="qopt" type="button">C · The bench only counts backups stored in a second cloud region</button>
+      <p class="qwhy">A copy the admin login can delete is not a backup against the admin login being taken. Immutable, restore-tested backups the warehouse credentials cannot reach take recoverable from 0 to 12 of 12, with the path count unchanged at 3.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - six Core Functions</span>
+        <span class="note">GOVERN, IDENTIFY, PROTECT, DETECT, RESPOND, RECOVER, published 26 February 2024, each with its framework definition and its meaning on a data estate.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Govern as the function added in 2.0</span>
+        <span class="note">Why it was promoted from a category inside Identify, and what it looks like on a warehouse: an owner, an approver with an expiry, three numbers to the board.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Detect and Recover on the attack-path bench</span>
+        <span class="note">Undetected 3 to 0 and recoverable 0 to 12, both with paths unchanged at 3; the all-prevention row at 1 path, 1 unseen.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">MITRE ATT&amp;CK Enterprise tactics</span>
+        <span class="note">Named under Detect. Session 3 maps the fifteen tactics of version 19.2 onto a warehouse and shows which stages a log can see.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Breach notification duties</span>
+        <span class="note">Named under Respond, taught in the data-governance course. Session 6 covers technical containment and the report only.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Grants, roles and access review</span>
+        <span class="note">Assumed, not taught. The access-control course owns them; they appear here as the Friday grant a Govern owner would have revoked.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Attacking models, prompts and agents</span>
+        <span class="note">Not covered by design. Model-side threats belong to the AI red-team course; this is the estate underneath.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 2 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Six functions, one date</b><span>Govern, Identify, Protect, Detect, Respond, Recover. NIST CSF 2.0, published 26 February 2024.</span></div>
+      <div class="cheat-item"><b>Govern is the new one</b><span>Added in 2.0 because controls kept existing without owners. On a warehouse: who owns the table, who approves the exception, what gets funded.</span></div>
+      <div class="cheat-item"><b>Identify is the inventory</b><span>Every account, key, bucket, export and runner, plus every copy of the table outside the warehouse. A checklist is not an inventory.</span></div>
+      <div class="cheat-item"><b>Protect removes paths</b><span>MFA 9 to 6, rotation 6 to 5, private bucket 5 to 4, pinning 4 to 3, least privilege 3 to 1. Then it runs out.</span></div>
+      <div class="cheat-item"><b>Detect moves unseen</b><span>Query logging and egress alerting: paths stay at 3, unseen goes 3 to 0. Invisible on a control count.</span></div>
+      <div class="cheat-item"><b>Recover moves recoverable</b><span>Immutable, restore-tested backups: 0 of 12 to 12 of 12, paths unchanged. Snapshots go with the account.</span></div>
+      <div class="cheat-item"><b>All prevention, no detection</b><span>One path left, the legitimate read, and nobody would see it used.</span></div>
+      <div class="cheat-item"><b>Six sentences, three numbers</b><span>One concrete sentence per function, marked funded, partly or absent, with paths, unseen and recoverable next to Protect, Detect and Recover.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Leader session 2 of 6 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="a1-attackers-view.html">← Leader session 1 · The attacker's view</a>
+      <a href="a3-kill-chain.html">Leader session 3 · The kill chain →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

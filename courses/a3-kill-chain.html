@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Leader session 3 of 6. The fifteen tactics of MITRE ATT&amp;CK version 19.2 walked through one warehouse in four stages: getting in, settling in, finding the data, getting it out or destroying it. Which stages Ironwood's logs would see, which stay dark, and the one path that skips every stage you can watch.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="The kill chain through a data stack - learn cyber security with phoebe">
+<meta property="og:description" content="Leader session 3 of 6. Fifteen tactics, four stages, one warehouse, and the two stages where detection actually pays.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/a3-kill-chain.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The kill chain through a data stack - learn cyber security with phoebe">
+<meta name="twitter:description" content="MITRE ATT&amp;CK v19.2 on a warehouse: why the middle of the chain is quiet, and why Collection and Exfiltration are where a log earns its keep.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Leader session 3 · The kill chain through a data stack - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Leader session 3 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Leader session 3 of 6</div>
+    <h1>The kill chain through <span class="accent">a data stack</span></h1>
+    <p class="sub">An intrusion is not an event. It is a sequence of small moves, each of which looks ordinary on its own, and the sequence has been written down. MITRE ATT&amp;CK lists the goals an attacker works through in order, fifteen of them in the current version, and every one of them has a specific shape when the target is a warehouse. Some of those moves cross a place you can log. Most do not. Tonight walks the chain through Ironwood from the first phished login to the dropped table, and marks the exact points where a log would light up and the long stretch where an attacker with a valid key is indistinguishable from the nightly ETL job.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Data and technology leaders</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:6">3-24 · Fifteen tactics on one warehouse</span>
+      <span class="a3" style="flex:4">24-40 · Build-along: which stages would you see</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits in the leader track</h2>
+    </div>
+    <p class="lede">Six sessions, 45 minutes each, no code and no SQL. Session 1 counted nine paths to Ironwood's customers table. Session 2 put the six functions of NIST CSF 2.0 onto the estate and showed that Detect is the function that moves unseen paths from three to zero without changing the path count. Tonight explains why detection works where it works: by walking the attacker's sequence of moves through the warehouse and finding the two points where the sequence has to cross something that can be logged. Session 4 is backups as attack surface, session 5 is detection in depth, session 6 is the first hour. <strong>Ironwood</strong>, the fictional mid-size retailer with one warehouse, one customers table and one set of backups, is the estate throughout.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> The fifteen tactics of MITRE ATT&amp;CK version 19.2 grouped into four stages you can hold in your head, each stage mapped to a concrete move on Ironwood's graph. The table of which stages a warehouse log sees and which it never will. And one sentence about your own estate that most leaders cannot currently say: the first stage at which you would notice an attacker, and how many stages they would have completed by then.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why a kill chain and not a threat list<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A threat list names things that could happen. A kill chain names the order in which an attacker has to do them, and order is what makes defence possible. An attacker cannot copy the customers table out before finding it, cannot find it before having a login that can query it, and cannot have that login before getting in somewhere. Each step depends on the one before, so seeing any single step early enough stops everything after it.</p>
+        <p>The chain also answers a question a threat list cannot: where to put the camera. Fifteen tactics sounds like fifteen things to watch. On a warehouse, most of them happen in places that produce no useful record, and two of them happen in places that produce a very good one. Knowing which two is the difference between a log that costs money and a log that catches something.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's incident retainer came with a threat briefing: 40 pages, several dozen named attacker groups, a heat map. Nobody could say what to do differently on Monday. The same estate walked through four stages produced one sentence: an attacker would complete every stage up to and including the full read of customers before anything at Ironwood recorded a thing, and the one log that would have caught the read was switched on and unread.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What ATT&amp;CK is, and what a leader needs from it<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>ATT&amp;CK</strong> is a knowledge base of adversary behaviour maintained by MITRE, built from documented real intrusions. It is versioned, and a new version lands roughly twice a year, which is why the number of tactics on an old slide can be wrong.</li>
+          <li><strong>A tactic</strong> is the attacker's goal at one stage: get in, hold on, find the data, take it. There are fifteen in version 19.2 and they are the level a leader works at.</li>
+          <li><strong>A technique</strong> is one specific way of achieving a tactic. There are hundreds. They are the level the builder track works at in its detection-engineering session, where a technique becomes a query against a log.</li>
+          <li><strong>Enterprise</strong> is the matrix that covers servers, cloud services and the identities that reach them. It is the one that applies to a warehouse. Mobile and industrial-control matrices exist and do not.</li>
+          <li><strong>The order</strong> matters more than the count. Fifteen tactics in sequence become four stages on a data estate, and the four stages are what the rest of tonight uses.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the fifteen tactics of ATT&amp;CK v19.2, the v19 rename, and the four stages on Ironwood's graph</span>
+      <h2>MITRE ATT&amp;CK, version 19.2, fifteen tactics</h2>
+      <span class="tag concept">12 min live</span>
+    </div>
+    <p class="lede">The Enterprise matrix of MITRE ATT&amp;CK version 19.2 lists fifteen tactics in this order: TA0043 Reconnaissance, TA0042 Resource Development, TA0001 Initial Access, TA0002 Execution, TA0003 Persistence, TA0004 Privilege Escalation, TA0005 Stealth, TA0112 Defense Impairment, TA0006 Credential Access, TA0007 Discovery, TA0008 Lateral Movement, TA0009 Collection, TA0011 Command and Control, TA0010 Exfiltration, TA0040 Impact. Fifteen is too many to hold while reading a log. Four stages is not.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The fifteen ATT&amp;CK v19.2 tactics as tiles labelled by TA code, grouped into four stage bands: getting in, settling in, finding the data, and getting it out or destroying it. Collection and Exfiltration are filled dark because they cross a point that can be logged; Impact is filled mid because it is survivable with immutable backups; the rest are quiet.">
+        <style>
+          .a3aT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .a3aH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .a3aS { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .a3aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .a3aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+
+        <rect x="14" y="20" width="282" height="84" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3aS" x="24" y="40">1 · Getting in</text>
+        <rect x="24" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="65" y="75" text-anchor="middle">TA0043</text>
+        <rect x="114" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="155" y="75" text-anchor="middle">TA0042</text>
+        <rect x="204" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="245" y="75" text-anchor="middle">TA0001</text>
+
+        <rect x="308" y="20" width="552" height="84" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3aS" x="318" y="40">2 · Settling in</text>
+        <rect x="318" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="359" y="75" text-anchor="middle">TA0002</text>
+        <rect x="408" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="449" y="75" text-anchor="middle">TA0003</text>
+        <rect x="498" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="539" y="75" text-anchor="middle">TA0004</text>
+        <rect x="588" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="629" y="75" text-anchor="middle">TA0005</text>
+        <rect x="678" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="719" y="75" text-anchor="middle">TA0112</text>
+        <rect x="768" y="50" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="809" y="75" text-anchor="middle">TA0006</text>
+
+        <rect x="14" y="120" width="282" height="84" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3aS" x="24" y="140">3 · Finding the data</text>
+        <rect x="24" y="150" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="65" y="175" text-anchor="middle">TA0007</text>
+        <rect x="114" y="150" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="155" y="175" text-anchor="middle">TA0008</text>
+        <rect x="204" y="150" width="82" height="40" rx="7" fill="#7C2D12"></rect>
+        <text class="a3aT" x="245" y="175" text-anchor="middle">TA0009</text>
+
+        <rect x="308" y="120" width="282" height="84" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3aS" x="318" y="140">4 · Getting it out or destroying it</text>
+        <rect x="318" y="150" width="82" height="40" rx="7" fill="#FED7AA"></rect>
+        <text class="a3aH" x="359" y="175" text-anchor="middle">TA0011</text>
+        <rect x="408" y="150" width="82" height="40" rx="7" fill="#7C2D12"></rect>
+        <text class="a3aT" x="449" y="175" text-anchor="middle">TA0010</text>
+        <rect x="498" y="150" width="82" height="40" rx="7" fill="#FDBA74"></rect>
+        <text class="a3aH" x="539" y="175" text-anchor="middle">TA0040</text>
+
+        <rect x="604" y="120" width="256" height="84" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3aS" x="614" y="140">Three fills, one meaning each</text>
+        <rect x="614" y="150" width="12" height="12" rx="3" fill="#7C2D12"></rect>
+        <text class="a3aB" x="632" y="160">crosses a point you can log</text>
+        <rect x="614" y="168" width="12" height="12" rx="3" fill="#FDBA74"></rect>
+        <text class="a3aB" x="632" y="178">survivable with immutable backups</text>
+        <rect x="614" y="186" width="12" height="12" rx="3" fill="#FED7AA"></rect>
+        <text class="a3aB" x="632" y="196">quiet: looks like the ETL job</text>
+
+        <rect x="14" y="224" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a3aN" x="38" y="235">Fifteen tactics in v19.2. Older material says fourteen: v19 split Defense Evasion into TA0005 and TA0112.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - fifteen tactics by TA code, four stages, and the two tiles that cross something a warehouse can log.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Stage 1, getting in: Reconnaissance, Resource Development, Initial Access<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>TA0043 Reconnaissance</strong> is the attacker learning what exists: which staff have warehouse access, which repositories are public, which buckets have names that follow the company's pattern. <strong>TA0042 Resource Development</strong> is preparing what the attack needs: a convincing login page, a package with a familiar name. <strong>TA0001 Initial Access</strong> is the first foothold.</p>
+        <p>On Ironwood's graph, Initial Access is the three doors from session 1. A credential that should not have worked: the analyst or admin who typed a password into a page that was not the warehouse, or the ETL service key sitting in a public repository. A misconfiguration: the export bucket anyone could list. A supply-chain component: the malicious package pulled onto the CI runner. Five of the nine baseline paths open at this stage through the credential door, one through misconfiguration, one through supply chain, and the two insider paths need no Initial Access at all because the insider is already in.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Stage 2, settling in: Execution, Persistence, Privilege Escalation, Stealth, Defense Impairment, Credential Access<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Six tactics, and the longest stretch of the chain. <strong>TA0002 Execution</strong> is running something: on a warehouse, issuing a query. <strong>TA0003 Persistence</strong> is making sure the access survives a password change or a reboot: a second key issued to the same service account, a scheduled task. <strong>TA0004 Privilege Escalation</strong> is turning a small login into a large one. <strong>TA0005 Stealth</strong> is avoiding notice while doing it. <strong>TA0112 Defense Impairment</strong> is switching off or degrading the controls that would notice. <strong>TA0006 Credential Access</strong> is collecting more keys and passwords along the way.</p>
+        <p>On Ironwood's graph, two of these have exact addresses. Credential Access is the ETL service key in the repository: a credential obtained not by breaking anything but by reading where it had been left. Privilege Escalation is the Friday admin grant: an analyst role that was given admin to unblock a deployment and never had it taken back, so that whoever holds the analyst login holds admin without doing anything further. Both are moves that a valid login makes, using permissions it genuinely has, which is why this stage is where the chain goes quiet.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's admin role had been granted to four people over two years for reasons that were each sensible on the day. Two had left. One was the analyst. None of the grants had an expiry, and the access review that would have caught them covered the warehouse's own users but not the roles those users had accumulated. Privilege Escalation at Ironwood did not require an attacker to escalate anything; the estate had done it for them in advance.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Stage 3, finding the data: Discovery, Lateral Movement, Collection<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>TA0007 Discovery</strong> is the attacker working out what the login they hold can reach: listing schemas, reading table names, finding the one called customers. <strong>TA0008 Lateral Movement</strong> is moving from the system they are in to the one that holds the prize: from a CI runner to the warehouse, from an analyst's laptop to the admin console. <strong>TA0009 Collection</strong> is gathering the data in one place ready to take.</p>
+        <p>On Ironwood's graph, Collection is a SELECT on the customers table: the whole table read in one query by a login with a role that is allowed to read it. That single move is the first point in the chain where the attacker has to touch the warehouse itself in a way the warehouse records. Every one of the eight paths that pass through the warehouse arrives here. Query logging exists for exactly this moment.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Stage 4, getting it out or destroying it: Command and Control, Exfiltration, Impact<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>TA0011 Command and Control</strong> is the attacker's channel back to themselves, the connection along which instructions arrive and results leave. <strong>TA0010 Exfiltration</strong> is the data leaving the estate. <strong>TA0040 Impact</strong> is the attacker doing damage rather than taking: deleting, encrypting, corrupting.</p>
+        <p>On Ironwood's graph, Exfiltration is a COPY to an external stage: the collected rows written from the warehouse to storage outside the company, in one bulk move, using a feature the warehouse offers for legitimate exports. Impact is the phished admin login dropping the warehouse's twelve tables and purging the snapshots and time travel behind them, so that the nightly backup goes with the data. Exfiltration crosses the egress point, the second and last place on the chain a warehouse estate can log. Impact cannot be seen in time to stop it; it can only be survived, and survival is a copy the admin login cannot delete.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The v19 rename, and why the count on your slide may be wrong<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Older material says fourteen tactics, with Defense Evasion as TA0005. Version 19 split that tactic into two: <strong>TA0005 Stealth</strong>, avoiding notice, and <strong>TA0112 Defense Impairment</strong>, degrading or disabling the controls that would notice. The current list, version 19.2, therefore has fifteen tactics, and any page, slide or vendor deck that says fourteen is describing a version that has been superseded.</p>
+        <p>The split is useful on a data estate, not just a renumbering. Stealth on a warehouse is an attacker with a valid key keeping their queries inside the pattern the ETL job already produces. Defense Impairment is that same attacker, holding admin, turning off query history retention or deleting the log. The first is why detection is hard. The second is why the log needs to live somewhere the warehouse's own admin cannot reach, which is the same principle as the backup and the reason session 5 stores logs off the estate.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers which stages Ironwood's logs see at each rung of the bench, and the one path none of them see</span>
+      <h2>Which stages you would see, and which you would not</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">Fifteen tactics on a warehouse produce a very small number of loggable moments. Everything before the first read of the table is a valid login behaving like a valid login. The read itself crosses the warehouse. The copy out crosses the egress point. The drop can only be survived. Four stages, two cameras, and one path that walks past both.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four lanes, one per stage, each showing what the attacker does at Ironwood and what would record it. Getting in and settling in are dark lanes where nothing records the move. Finding the data is seen by query logging. Getting it out is seen by egress alerting and survived by immutable backups. A note says the export bucket path skips all four lanes.">
+        <style>
+          .a3bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a3bS { font: 400 10px Inter, sans-serif; fill: #fff; }
+          .a3bB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .a3bC { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .a3bM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a3bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .a3bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+
+        <text class="a3bM" x="14" y="22">stage</text>
+        <text class="a3bM" x="200" y="22">what the attacker does at Ironwood</text>
+        <text class="a3bM" x="560" y="22">what would record it</text>
+
+        <rect x="14" y="36" width="170" height="72" rx="8" fill="#431407"></rect>
+        <text class="a3bT" x="26" y="60">1 · Getting in</text>
+        <text class="a3bS" x="26" y="78">TA0043 TA0042 TA0001</text>
+        <rect x="200" y="36" width="340" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bB" x="212" y="58">one of the three doors: a phished login,</text>
+        <text class="a3bB" x="212" y="76">a key read from the public repo, or a</text>
+        <text class="a3bB" x="212" y="94">malicious package on the CI runner</text>
+        <rect x="560" y="36" width="306" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bR" x="572" y="58">nothing · dark lane</text>
+        <text class="a3bM" x="572" y="76">a valid login from a laptop looks like</text>
+        <text class="a3bM" x="572" y="94">every other Monday morning login</text>
+
+        <rect x="14" y="116" width="170" height="72" rx="8" fill="#431407"></rect>
+        <text class="a3bT" x="26" y="140">2 · Settling in</text>
+        <text class="a3bS" x="26" y="158">TA0002 TA0003 TA0004</text>
+        <text class="a3bS" x="26" y="172">TA0005 TA0112 TA0006</text>
+        <rect x="200" y="116" width="340" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bB" x="212" y="138">the Friday admin grant is used; the ETL</text>
+        <text class="a3bB" x="212" y="156">key is used from outside as if it were</text>
+        <text class="a3bB" x="212" y="174">the nightly job</text>
+        <rect x="560" y="116" width="306" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bR" x="572" y="138">nothing · dark lane</text>
+        <text class="a3bM" x="572" y="156">a valid key doing what the ETL key</text>
+        <text class="a3bM" x="572" y="174">does every night, at a different hour</text>
+
+        <rect x="14" y="196" width="170" height="72" rx="8" fill="#7C2D12"></rect>
+        <text class="a3bT" x="26" y="220">3 · Finding the data</text>
+        <text class="a3bS" x="26" y="238">TA0007 TA0008 TA0009</text>
+        <rect x="200" y="196" width="340" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bB" x="212" y="218">a SELECT on customers with a role</text>
+        <text class="a3bB" x="212" y="236">that is allowed to read it; the</text>
+        <text class="a3bB" x="212" y="254">whole table in one query</text>
+        <rect x="560" y="196" width="306" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bC" x="572" y="218">query logging on the warehouse</text>
+        <text class="a3bM" x="572" y="236">Collection crosses the one place every</text>
+        <text class="a3bM" x="572" y="254">warehouse path has to pass</text>
+
+        <rect x="14" y="276" width="170" height="72" rx="8" fill="#7C2D12"></rect>
+        <text class="a3bT" x="26" y="296">4 · Getting it out</text>
+        <text class="a3bT" x="26" y="312">or destroying it</text>
+        <text class="a3bS" x="26" y="330">TA0011 TA0010 TA0040</text>
+        <rect x="200" y="276" width="340" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bB" x="212" y="298">a COPY to an external stage; or drop</text>
+        <text class="a3bB" x="212" y="316">the warehouse and purge the backups,</text>
+        <text class="a3bB" x="212" y="334">snapshots included</text>
+        <rect x="560" y="276" width="306" height="72" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a3bC" x="572" y="298">egress alerting sees the COPY</text>
+        <text class="a3bC" x="572" y="316">immutable backups survive the drop</text>
+        <text class="a3bM" x="572" y="334">Exfiltration seen; Impact survivable</text>
+
+        <rect x="14" y="372" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a3bN" x="38" y="383">The export bucket path skips the warehouse, so none of these lanes records it. Only the bucket's own log can.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - four stages on Ironwood's graph, two dark lanes, two places a log earns its keep.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Four stages against the rungs of the bench<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Stage</th><th>No logs</th><th>Query logging</th><th>Plus egress alerting</th><th>Plus immutable backups</th></tr></thead>
+          <tbody>
+            <tr><td>1 · Getting in</td><td>Not seen</td><td>Not seen</td><td>Not seen</td><td>Not seen</td></tr>
+            <tr><td>2 · Settling in</td><td>Not seen</td><td>Not seen</td><td>Not seen</td><td>Not seen</td></tr>
+            <tr><td>3 · Finding the data</td><td>Not seen</td><td>Collection seen</td><td>Collection seen</td><td>Collection seen</td></tr>
+            <tr><td>4 · Getting it out or destroying it</td><td>Not seen</td><td>Not seen</td><td>Exfiltration seen</td><td>Exfiltration seen; Impact survivable</td></tr>
+            <tr><td>Bench, with every Protect control on except least privilege</td><td>3 paths, 3 unseen, 0 of 12 recoverable</td><td colspan="2">Query logging and egress alerting are one rung: 3 paths, 0 unseen, 0 of 12</td><td>3 paths, 0 unseen, 12 of 12 recoverable</td></tr>
+          </tbody>
+        </table>
+        <p>Read across any row and the pattern is the same: two stages never light up whatever is switched on, one lights up at the first logging rung, one at the second. Read down the last column and the attacker completes every move up to the full read of the table before anything is recorded. That is the honest shape of detection on a warehouse. It does not see the intrusion; it sees the intrusion reach the data.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why the middle stages are quiet: a valid key looks like the ETL job<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every move in stages 1 and 2 is made with something the estate issued. The phished analyst logs in with the analyst's real password from a real laptop. The service key from the repository authenticates exactly as it does every night when the ETL job uses it. The Friday admin grant is a permission the warehouse recorded granting, so exercising it is not an anomaly, it is a grant working as designed. There is no failed login to alert on, no exploit to signature, no unusual permission to flag.</p>
+        <p>The professional consequence is that detection built around "suspicious activity" finds nothing here, because nothing here is suspicious to the system that recorded it. What separates the attacker from the ETL job is the hour, the source address and, later, what gets read. Two of those three are only visible once the login does something, which is stage 3.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why the last two stages are where detection pays<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Collection and Exfiltration are the two tactics that cannot be performed anywhere except at the data. A read of the customers table happens in the warehouse and nowhere else; a copy out happens at the egress point and nowhere else. Those are the two places a warehouse estate can put a log that every path through the warehouse must cross. Everything upstream of them happens on laptops, in repositories and on runners, where a log either does not exist or records something indistinguishable from normal work.</p>
+        <p>This is why Ironwood's bench moves unseen from three to zero at the query logging and egress alerting rung and at no other. The three remaining paths differ completely in stages 1 and 2 and converge at stage 3: all three read the table, and a read of the table is one event with one log. A single camera at the point of convergence sees more than a dozen scattered along the approach.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's query history had been retained for a year. Nobody had ever asked it a question. The first question anyone asked, once the leader track had produced the four-stage table, was "which logins read all of customers in a single query in the last twelve months, and at what hour". The answer was the ETL job, nightly at 02:00, and one analyst login at 23:40 on a Saturday, once. That single row was the Collection stage of a path that had already completed. Nothing before it had left a mark.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The path that skips every stage you can see<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The export bucket path from session 1 goes from the internet to a nightly extract of the customers table and never enters the warehouse. Walk it through the four stages: Initial Access is the bucket listing anyone can read; Collection is downloading the extract; Exfiltration has already happened, because the data was written outside the estate by Ironwood's own pipeline. Not one of those moves crosses the warehouse or the warehouse's egress point.</p>
+        <p>Query logging sees nothing, because there was no query. Egress alerting sees nothing, because the data left the warehouse on schedule, as an authorised export, the night before. Every stage the warehouse can watch is skipped. The only record that could exist is the bucket's own access log, and the only defence is the one from session 1: every copy of the crown jewels outside the warehouse needs its own control and its own log, or it is a path through a room with no camera at all.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Impact: survivable is not the same as seen<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A dropped table appears in the query log like any other statement, so Impact is technically visible. It is not visible in time. By the time the log shows the drop, the tables are gone and, without a copy the admin login cannot reach, so are the snapshots. Detection at stage 4 tells you what happened; it does not give the data back.</p>
+        <p>That is why the bench treats Impact differently from Collection and Exfiltration. Those two are detection problems and the control is a log. Impact is a recovery problem and the control is an immutable, restore-tested backup, which takes recoverable tables from 0 of 12 to 12 of 12 while leaving paths and unseen exactly where they were. Session 4 is about that control alone. What matters tonight is the distinction: a stage can be seen, survived, or neither, and the four-stage table should say which for each.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Which stages would you see</h2>
+      <span class="tag demo">★ 16 min · everyone builds</span>
+    </div>
+    <p class="lede">One sheet, four rows, no tools. Walk your own estate through the four stages as the attacker would, then ask of each row whether any log you currently keep would record it. If you have no estate to hand, use Ironwood with its audit log switched on and unread, and check your answer against the table above. The output is two sentences: the first stage you would see, and the stage you never would.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Write one sentence per stage on what the attacker would do to your estate.</strong> Getting in: which of the three doors is most open. Settling in: which existing grant or key would they use as their own. Finding the data: which table, read how. Getting it out or destroying it: which export feature, or which drop. Use the attacker's verb and your estate's nouns.</p>
+      </div>
+      <div class="step">
+        <p><strong>Against each sentence, name the log that would record it, or write "none".</strong> Be strict. A log exists only if it is switched on, retained, and somebody could name the last time it was opened. "There is an audit log" does not qualify; "query history, retained 90 days, reviewed by the platform lead weekly" does.</p>
+      </div>
+      <div class="step">
+        <p><strong>Find the first stage you would see.</strong> Count how many stages the attacker completed before it. At Ironwood the answer is stage 3, after two full stages and the whole approach. For many estates the honest answer is stage 4, or never. Write the number down; it is the questionnaire answer to "would you know".</p>
+      </div>
+      <div class="step">
+        <p><strong>Write down the stage you would never see.</strong> For most warehouses it is stages 1 and 2, and that is normal: a valid key is a valid key. The useful finding is any stage 3 or 4 row that reads "none", because those are the two places a log is possible and cheap.</p>
+      </div>
+      <div class="step">
+        <p><strong>Walk one copy of the data that lives outside the warehouse through the same four rows.</strong> An export bucket, a partner share, a replica. If every row says "none", that copy is Ironwood's bucket, and its own access log is the first thing to fund.</p>
+      </div>
+    </div>
+
+    <div class="prompt-box bad">
+      <span class="label">✗ Four rows that describe the controls and not the chain</span>
+Getting in: we have MFA and a firewall.
+Settling in: access is role-based.
+Finding the data: all access is logged.
+Getting it out or destroying it: backups run nightly.
+    </div>
+
+    <div class="prompt-box good">
+      <span class="label">★ The same estate, four rows written as the attacker's moves and the log that would see each</span>
+Getting in: a phished analyst password; no second factor. Log: none. Dark.
+Settling in: the analyst role still holds the Friday admin grant. Log: none. Dark.
+Finding the data: one query reads all of customers. Log: query history, retained, never reviewed. Seen only if someone looks.
+Getting it out or destroying it: a bulk copy to an external stage; or drop twelve tables and purge the snapshots. Log: none on egress; drop visible after the fact. Recoverable: 0 of 12.
+First stage seen: 3, and only if the log is read. Stage never seen: 1 and 2. Copy outside the warehouse: export bucket, no log at any stage.
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Two cameras, not fifteen.</strong> The most useful thing a leader can take from the fifteen tactics is that a warehouse estate needs a log at the table and a log at the egress point, read by a person, and that no amount of watching the approach replaces either.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 4</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Take your four-stage sheet to whoever runs the warehouse and ask them to correct the log column. Keep the version where the two of you disagree; the disagreement is the finding.</li>
+      <li>Ask, in writing, which logins have read the whole crown-jewel table in a single query in the last year, and at what hour. If nobody can answer, the Collection stage is dark regardless of what the questionnaire says about logging.</li>
+      <li>Ask whether the query history is stored somewhere the warehouse's admin login cannot delete it. If not, write Defense Impairment next to it: an attacker holding admin can remove the one record of stage 3.</li>
+      <li>Check the tactic count on any security slide or vendor deck in circulation. If it says fourteen, or names Defense Evasion as TA0005, it predates version 19 and should be corrected before it is presented again.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">A vendor deck lists fourteen ATT&amp;CK tactics, with Defense Evasion as TA0005. What does the current version, 19.2, say?</p>
+      <button class="qopt" type="button">A · Fourteen is still correct; version 19 only renumbered the existing tactics</button>
+      <button class="qopt" type="button">B · Fifteen tactics: version 19 split Defense Evasion into TA0005 Stealth and TA0112 Defense Impairment</button>
+      <button class="qopt" type="button">C · Thirteen tactics: Defense Evasion was removed and its techniques folded into Persistence</button>
+      <p class="qwhy">Version 19 split the old tactic into two. Stealth is avoiding notice; Defense Impairment is degrading or disabling the controls that would notice. On a warehouse the second is an admin deleting the query history, which is why the log must live where admin cannot reach it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Why do stages 1 and 2, getting in and settling in, stay dark at Ironwood no matter which log is switched on?</p>
+      <button class="qopt" type="button">A · Because those stages happen too fast for any log to capture</button>
+      <button class="qopt" type="button">B · Because ATT&amp;CK does not define techniques for them on cloud warehouses</button>
+      <button class="qopt" type="button">C · Because every move is made with a credential or grant the estate issued, so it records as a valid login doing what valid logins do</button>
+      <p class="qwhy">The phished password is the real password; the repository key is the ETL job's key; the Friday grant is a permission the warehouse recorded granting. Nothing fails and nothing is unusual to the system that logs it. The attacker becomes distinguishable only when the login reads the table, at stage 3.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">Ironwood switches on query logging and egress alerting. Which stage of the export bucket path becomes visible?</p>
+      <button class="qopt" type="button">A · None: the path never enters the warehouse, so it skips every stage a warehouse log can see, and only the bucket's own access log could record it</button>
+      <button class="qopt" type="button">B · Collection, because downloading the extract is a read of the customers data</button>
+      <button class="qopt" type="button">C · Exfiltration, because the data leaves the estate when the extract is downloaded</button>
+      <p class="qwhy">There is no query, so query logging sees nothing. The data left the warehouse the night before as an authorised export, so egress alerting saw a scheduled job. Every copy of the crown jewels outside the warehouse needs its own control and its own log.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">MITRE ATT&amp;CK Enterprise tactics, version 19.2</span>
+        <span class="note">All fifteen, by TA code and name, in order, grouped into four stages an attacker walks through a data estate.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">The v19 rename</span>
+        <span class="note">Older material says fourteen tactics with Defense Evasion as TA0005; v19 split it into TA0005 Stealth and TA0112 Defense Impairment, and what each means on a warehouse.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Tactics mapped to warehouse events</span>
+        <span class="note">Initial Access as the three doors, Credential Access as the key in the repo, Privilege Escalation as the Friday grant, Collection as the read of customers, Exfiltration as the copy to an external stage, Impact as the drop and purge; which rung of the bench sees each.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Detection engineering: techniques into log queries</span>
+        <span class="note">Named. The builder track's seventh session turns individual techniques into queries against query history and egress logs, undetected 3 to 0.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Impact, backups and immutability</span>
+        <span class="note">Named as the stage that is survived rather than seen. Session 4 covers time travel, immutability and restore drills, recoverable 0 to 12.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Grants, roles and access review</span>
+        <span class="note">Assumed, not taught. The access-control course owns them; they appear here as the accumulated admin grants that make Privilege Escalation unnecessary.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Attacking models, prompts and agents</span>
+        <span class="note">Not covered by design. Model-side threats belong to the AI red-team course; this is the estate underneath.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 3 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Fifteen tactics, v19.2</b><span>TA0043 through TA0040 in order. Older material says fourteen; v19 split Defense Evasion into TA0005 Stealth and TA0112 Defense Impairment.</span></div>
+      <div class="cheat-item"><b>Four stages</b><span>Getting in (3 tactics), settling in (6), finding the data (3), getting it out or destroying it (3).</span></div>
+      <div class="cheat-item"><b>Ironwood's addresses</b><span>Initial Access: the three doors. Credential Access: the key in the repo. Privilege Escalation: the Friday grant. Collection: the read of customers. Exfiltration: the copy to an external stage. Impact: drop and purge.</span></div>
+      <div class="cheat-item"><b>Stages 1 and 2 are dark</b><span>Every move uses something the estate issued. A valid key looks like the ETL job.</span></div>
+      <div class="cheat-item"><b>Two cameras</b><span>Query logging at the table sees Collection. Egress alerting at the boundary sees Exfiltration. One rung on the bench: unseen 3 to 0, paths unchanged.</span></div>
+      <div class="cheat-item"><b>Impact is survived, not seen</b><span>The drop shows in the log after the data is gone. Immutable backups: recoverable 0 to 12.</span></div>
+      <div class="cheat-item"><b>The bucket skips every lane</b><span>The export bucket path never enters the warehouse. Only its own access log can record it.</span></div>
+      <div class="cheat-item"><b>Two sentences to write</b><span>The first stage you would see, and how many the attacker completed before it. The stage you would never see.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Leader session 3 of 6 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="a2-six-functions.html">← Leader session 2 · Six functions</a>
+      <a href="a4-backups-attack-surface.html">Leader session 4 · Backups are attack surface too →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

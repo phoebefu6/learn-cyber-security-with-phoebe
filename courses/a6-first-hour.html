@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Leader session 6 of 6. The three containment decisions that have to be agreed before the incident, who is told in which order, what to preserve for the postmortem, and the security report rewritten as three numbers: open paths, unseen paths, recoverable tables. Ironwood goes from 9 / 9 / 0 to 1 / 0 / 12.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="The first hour, and the report - learn cyber security with phoebe">
+<meta property="og:description" content="Leader session 6 of 6. Decisions made before 03:00, and a report that says three numbers instead of a control count.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/a6-first-hour.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The first hour, and the report - learn cyber security with phoebe">
+<meta name="twitter:description" content="Three pre-agreed decisions, one notification order, and 9 / 9 / 0 becoming 1 / 0 / 12.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Leader session 6 · The first hour, and the report - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Leader session 6 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Leader session 6 of 6</div>
+    <h1>The first hour, <span class="accent">and the report</span></h1>
+    <p class="sub">Five sessions have been about the doors: which ones exist, which control closes each, which log sees the ones that stay open. Tonight assumes a door was used anyway. Somebody at Ironwood is looking at an alert at three in the morning, and the quality of the next hour is decided almost entirely by what was written down before it. Then the calmer half: the security paragraph in the customer questionnaire, rewritten from a list of controls into three numbers that a board can compare month to month, and that would have shown the firewall-only answer for what it was.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Advanced</span>
+      <span class="chip audience">Data and technology leaders</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-20 · Containment decisions and who to tell</span>
+      <span class="a3" style="flex:4">20-40 · Build-along: the one-page plan and the three-number report</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits in the leader track</h2>
+    </div>
+    <p class="lede">Session 1 counted nine paths to Ironwood's customers table. Session 2 put the six NIST CSF 2.0 functions over the estate and left Respond and Recover for tonight. Session 3 walked the kill chain, session 4 made the backups survive the admin login, and session 5 put a log on the paths prevention cannot close. What remains is the hour in which all of it is tested at once, and the page on which all of it is reported. <strong>Ironwood</strong> is still the estate: twelve tables, one customers table worth stealing, an ETL service key, an analyst and an admin login, an export bucket, a CI runner, and since session 4 a copy of the warehouse that the admin login cannot delete.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> Three containment decisions written as one sentence each, with the name of the person allowed to take them, so nobody has to argue about the ETL at 03:00. A notification order for your own estate, with the point where the technical incident becomes a legal one clearly marked. And a security report of three numbers: Ironwood's went from 9 open paths, 9 unseen and 0 recoverable tables to 1, 0 and 12, while the firewall-only answer everyone had been happy with was sitting at 7, 7 and 0.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why the first hour is decided before it starts<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every containment action in a data incident costs something the business wants. Revoking the suspected key stops the pipeline that feeds the morning dashboards. Cutting egress to external stages breaks the partner feed. Restoring from the immutable copy throws away a day of legitimate writes. At three in the morning, with an incomplete picture and a tired on-call, the argument for waiting always sounds reasonable, and waiting is how a contained incident becomes a breach.</p>
+        <p>The fix is not braver on-calls. It is that the decision has already been taken, in daylight, by the person whose budget it costs, and written down with their name. The on-call then executes a decision rather than making one. That single change is worth more than most tooling purchases, and it costs an afternoon.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's alert fired at 02:40: the ETL service key authenticating from an address nobody recognised, running SELECTs against customers. The on-call engineer spent fifty minutes on a call trying to reach somebody senior enough to approve revoking the key, because revoking it would break the 06:00 load. The reads continued for the whole fifty minutes. The person they were trying to reach would have said yes in five seconds, and had never been asked to say it in advance.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Five words for tonight<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Containment</strong> - stopping the attacker's current path from being used further: revoke, cut, isolate. It removes an edge from the live graph, at a cost to the business that must be paid without a meeting.</li>
+          <li><strong>Respond</strong> - the NIST CSF 2.0 function covering actions taken regarding a detected incident: analysis, containment, communication, evidence. It ends when the attacker can no longer act.</li>
+          <li><strong>Recover</strong> - the separate CSF function that restores assets and operations. It is only possible if a copy exists that the attacker could not reach, which is the whole argument of session 4.</li>
+          <li><strong>Evidence preservation</strong> - keeping the attacker's traces intact: their objects, the query history, the login records. The postmortem is built from them, and the instinct to clean up destroys them.</li>
+          <li><strong>The three numbers</strong> - open paths to the crown jewels, how many cross no log, and how many tables are recoverable if the admin login is lost. The report, in the form a board can compare across months.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers containment, notification, Respond against Recover, and evidence</span>
+      <h2>The first hour is decided before it starts</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">The first hour has five movements: detect, contain, notify, preserve, recover. Only the first one happens to you. The other four go well or badly according to what was agreed in advance, and each has one decision that people reliably get wrong under pressure.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The first hour of a data incident as five stages on a timeline: detect, contain with three pre-agreed decisions, notify in a fixed order, preserve evidence, and recover from the immutable copy. Each stage lists what happens and the mistake it prevents.">
+        <style>
+          .a6aT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a6aH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .a6aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .a6aM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a6aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .a6aR { font: 700 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="a6aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <line x1="14" y1="22" x2="866" y2="22" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a6aAr)"></line>
+        <text class="a6aM" x="14" y="14">minute 0</text>
+        <text class="a6aM" x="188" y="14">minute 5</text>
+        <text class="a6aM" x="362" y="14">minute 15</text>
+        <text class="a6aM" x="536" y="14">throughout</text>
+        <text class="a6aM" x="710" y="14">when the attacker is out</text>
+
+        <rect x="14" y="34" width="160" height="34" rx="8" fill="#431407"></rect>
+        <text class="a6aT" x="94" y="56" text-anchor="middle">Detect</text>
+        <rect x="14" y="74" width="160" height="240" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a6aB" x="26" y="98">an alert fires, or a</text>
+        <text class="a6aB" x="26" y="116">person notices</text>
+        <text class="a6aB" x="26" y="134">the on-call confirms</text>
+        <text class="a6aB" x="26" y="152">it is real</text>
+        <text class="a6aB" x="26" y="170">the clock starts</text>
+        <text class="a6aM" x="26" y="212">the only stage that</text>
+        <text class="a6aM" x="26" y="228">happens to you</text>
+        <text class="a6aR" x="26" y="270">mistake: waiting for</text>
+        <text class="a6aR" x="26" y="286">certainty</text>
+
+        <rect x="188" y="34" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="a6aT" x="268" y="56" text-anchor="middle">Contain</text>
+        <rect x="188" y="74" width="160" height="240" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a6aB" x="200" y="98">three pre-agreed</text>
+        <text class="a6aB" x="200" y="116">decisions, named:</text>
+        <text class="a6aB" x="200" y="134">1 revoke the key,</text>
+        <text class="a6aB" x="200" y="152">   even if ETL breaks</text>
+        <text class="a6aB" x="200" y="170">2 cut egress to</text>
+        <text class="a6aB" x="200" y="188">   external stages</text>
+        <text class="a6aB" x="200" y="206">3 restore from the</text>
+        <text class="a6aB" x="200" y="224">   immutable copy</text>
+        <text class="a6aR" x="200" y="270">mistake: a meeting</text>
+        <text class="a6aR" x="200" y="286">at 03:00</text>
+
+        <rect x="362" y="34" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="a6aT" x="442" y="56" text-anchor="middle">Notify</text>
+        <rect x="362" y="74" width="160" height="240" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a6aB" x="374" y="98">in this order:</text>
+        <text class="a6aB" x="374" y="116">1 the on-call</text>
+        <text class="a6aB" x="374" y="134">2 the data owner</text>
+        <text class="a6aB" x="374" y="152">3 the security lead</text>
+        <text class="a6aB" x="374" y="170">4 legal and comms</text>
+        <text class="a6aM" x="374" y="212">regulator and customer</text>
+        <text class="a6aM" x="374" y="228">duties: the governance</text>
+        <text class="a6aM" x="374" y="244">course owns them</text>
+        <text class="a6aR" x="374" y="270">mistake: telling</text>
+        <text class="a6aR" x="374" y="286">everyone at once</text>
+
+        <rect x="536" y="34" width="160" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="a6aH" x="616" y="56" text-anchor="middle">Preserve</text>
+        <rect x="536" y="74" width="160" height="240" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a6aB" x="548" y="98">do not delete the</text>
+        <text class="a6aB" x="548" y="116">attacker's objects</text>
+        <text class="a6aB" x="548" y="134">snapshot the query</text>
+        <text class="a6aB" x="548" y="152">history and logins</text>
+        <text class="a6aB" x="548" y="170">keep the egress log</text>
+        <text class="a6aM" x="548" y="212">the postmortem is</text>
+        <text class="a6aM" x="548" y="228">built from these</text>
+        <text class="a6aR" x="548" y="270">mistake: tidying</text>
+        <text class="a6aR" x="548" y="286">up</text>
+
+        <rect x="710" y="34" width="156" height="34" rx="8" fill="#FED7AA"></rect>
+        <text class="a6aH" x="788" y="56" text-anchor="middle">Recover</text>
+        <rect x="710" y="74" width="156" height="240" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="a6aB" x="722" y="98">restore from the</text>
+        <text class="a6aB" x="722" y="116">immutable copy</text>
+        <text class="a6aB" x="722" y="134">not from the</text>
+        <text class="a6aB" x="722" y="152">current tables</text>
+        <text class="a6aB" x="722" y="170">rotate every key</text>
+        <text class="a6aM" x="722" y="212">possible only because</text>
+        <text class="a6aM" x="722" y="228">the copy survived</text>
+        <text class="a6aR" x="722" y="270">mistake: trusting</text>
+        <text class="a6aR" x="722" y="286">what is there</text>
+
+        <rect x="14" y="340" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a6aN" x="38" y="352">Only detection happens to you. The other four go as well as what was written down before.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the first hour in five movements, and the mistake each one invites.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Three decisions nobody can make well at 03:00<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Each of these is cheap to agree in daylight and ruinous to debate at night. Each is written as one sentence, names the role that may take it without asking, and names what it will break, so that the breakage is a known cost and not a surprise.</p>
+        <ul>
+          <li><strong>Revoke the suspected credential, even if it breaks the ETL.</strong> A key that is authenticating from an unknown place is an attacker's key until proven otherwise. The 06:00 load failing is a bad morning; the reads continuing for the fifty minutes it takes to find an approver is a breach. Ironwood's sentence: "The on-call may revoke any service key or disable any login on suspicion of misuse, and the platform lead owns the resulting outage."</li>
+          <li><strong>Cut egress to external stages.</strong> A read that stays inside the warehouse is a smaller event than a copy that leaves. Disabling the paths by which data exits, external stages, shares, export buckets, contains the size of the incident while the credential question is worked out. It breaks the partner feed. That is the cost, and the data owner has already accepted it.</li>
+          <li><strong>Restore from the immutable copy rather than trust the current tables.</strong> Once an attacker has held write access, every row is suspect. The clean state is the copy they could not reach, and the day of legitimate writes lost is the price of certainty. Without session 4's immutable copy this decision does not exist, because there is nothing clean to restore from.</li>
+        </ul>
+        <div class="callout tip">
+          <p><strong>The test of a pre-agreed decision is that it can be taken by one person, alone, at night, without a call.</strong> If the sentence contains "consult" or "escalate", it is not a decision, it is the meeting that was supposed to be avoided.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Who is told, in which order, and where the hand-off is<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Notification has an order because each person on the list has a decision to make, and telling everyone at once means nobody knows whose decision is next. The order is a chain of ownership, not a chain of seniority.</p>
+        <table class="clean">
+          <thead><tr><th>Order</th><th>Who</th><th>Their decision</th><th>Within</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>The on-call</td><td>Is it real, and which of the three containment decisions applies</td><td>Minutes</td></tr>
+            <tr><td>2</td><td>The data owner</td><td>Which tables are in scope, whether the export and the partner feed are cut</td><td>15 minutes</td></tr>
+            <tr><td>3</td><td>The security lead</td><td>Whether the incident is wider than the warehouse, and who leads the investigation</td><td>30 minutes</td></tr>
+            <tr><td>4</td><td>Legal and communications</td><td>Whether a regulator or a customer must be told, and by when</td><td>Within the hour</td></tr>
+          </tbody>
+        </table>
+        <p>Step 4 is where the technical incident becomes a legal one. What must be reported, to whom, and within how many hours varies by jurisdiction and by the kind of data, and it is a matter of law rather than platform. Those duties are taught properly in the data-governance course under breach response. What belongs on the platform side is only this: legal and communications are on the list, they are told within the hour, and they are handed the evidence rather than a summary.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Respond and Recover are two functions, and only one of them is guaranteed<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>NIST CSF 2.0 keeps Respond and Recover as separate functions for a reason that shows up in the first hour. Respond is the set of actions taken about a detected incident: confirming it, containing it, communicating it, preserving what it left behind. Every organisation can Respond, well or badly, because responding only requires acting on what is in front of you.</p>
+        <p>Recover is restoring the assets and the operations. It requires something to restore from, and that thing has to have survived an attacker who held the admin login. Ironwood's ladder reports recoverable tables at 0 until immutable, restore-tested backups are on, and 12 afterwards. Before session 4, Ironwood could Respond and could not Recover, and no amount of good decision-making in the first hour changes that. The first hour is where a leader finds out whether the backup decision was made.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's earlier incident plan had a step called "restore from backup" with no owner and no date of a last successful restore. The backup it referred to was the warehouse's own time travel, which shares an account with the thing being restored. Respond went fine. Recover was a sentence in a document.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Preserve the evidence: the postmortem is built from what the attacker left<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The strongest instinct in the first hour is to clean up: drop the strange table, delete the unfamiliar stage, remove the user nobody recognises. Every one of those actions destroys the record of what happened, and the postmortem that decides what to fund next is built from exactly that record. Contain by revoking access to the objects; do not remove the objects.</p>
+        <ul>
+          <li><strong>Leave the attacker's objects in place.</strong> A stage they created, a table they wrote, a role they granted. Revoke every grant on them so nothing can use them, then leave them for the investigation. Their creation timestamps and owners are the timeline.</li>
+          <li><strong>Snapshot the query history now.</strong> Most warehouses keep query history for a bounded window and it is not immune to housekeeping. Copy the rows for the suspect accounts, for the whole retention window, into a table the incident team owns and nobody else can write to.</li>
+          <li><strong>Snapshot the login history and the egress log.</strong> Which credential, from which address, at which time, and what left. The notification decision in step 4 depends on knowing what left, and the log that says so is the one that gets rotated first.</li>
+          <li><strong>Record who did what, when, during the response.</strong> Containment actions are themselves changes to the estate. A postmortem that cannot separate the attacker's changes from the responders' changes reaches the wrong conclusions.</li>
+          <li><strong>Do not rotate the evidence away.</strong> Rotating every key is the right recovery action, and it must wait until the login records tied to the old keys have been copied. The order is copy, then rotate.</li>
+        </ul>
+        <p>The postmortem's job is one question: which edge on the inventory did this path use, and why was the control that should have closed it not there. That question can only be answered from evidence that survived the first hour.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the three numbers, what to fund, the cadence, and what not to promise</span>
+      <h2>The report: three numbers, not a control count</h2>
+      <span class="tag concept">8 min live</span>
+    </div>
+    <p class="lede">Ironwood's questionnaire answer for three years was "customer data is protected by role-based access and a firewall". It was true, and it described an estate with seven open paths to the customers table, none of them logged, and backups that went with the admin login. The report that would have caught that has three numbers on it and no list of controls.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three groups of tiles showing Ironwood's three-number report. Before any control: 9 open paths, 9 unseen, 0 recoverable tables. Perimeter firewall only: 7, 7 and 0, labelled as the state a control list hides. After the whole design: 1, 0 and 12.">
+        <style>
+          .a6bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .a6bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .a6bW { font: 800 26px Inter, sans-serif; fill: #fff; }
+          .a6bK { font: 800 26px Inter, sans-serif; fill: #1C1210; }
+          .a6bX { font: 800 26px Inter, sans-serif; fill: #991B1B; }
+          .a6bL { font: 400 10px Inter, sans-serif; fill: #1C1210; }
+          .a6bLw { font: 400 10px Inter, sans-serif; fill: #fff; }
+          .a6bM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .a6bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .a6bR { font: 700 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="a6bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <rect x="14" y="20" width="270" height="34" rx="8" fill="#431407"></rect>
+        <text class="a6bT" x="149" y="42" text-anchor="middle">Before: nothing on</text>
+        <rect x="14" y="66" width="80" height="90" rx="8" fill="#FED7AA"></rect>
+        <text class="a6bX" x="54" y="108" text-anchor="middle">9</text>
+        <text class="a6bL" x="54" y="130" text-anchor="middle">open</text>
+        <text class="a6bL" x="54" y="144" text-anchor="middle">paths</text>
+        <rect x="109" y="66" width="80" height="90" rx="8" fill="#FED7AA"></rect>
+        <text class="a6bX" x="149" y="108" text-anchor="middle">9</text>
+        <text class="a6bL" x="149" y="130" text-anchor="middle">cross</text>
+        <text class="a6bL" x="149" y="144" text-anchor="middle">no log</text>
+        <rect x="204" y="66" width="80" height="90" rx="8" fill="#FED7AA"></rect>
+        <text class="a6bX" x="244" y="108" text-anchor="middle">0</text>
+        <text class="a6bL" x="244" y="130" text-anchor="middle">tables</text>
+        <text class="a6bL" x="244" y="144" text-anchor="middle">recoverable</text>
+        <text class="a6bM" x="14" y="182">the honest starting point</text>
+
+        <rect x="305" y="20" width="270" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="a6bH" x="440" y="42" text-anchor="middle">Perimeter firewall only</text>
+        <rect x="305" y="66" width="80" height="90" rx="8" fill="#FED7AA"></rect>
+        <text class="a6bX" x="345" y="108" text-anchor="middle">7</text>
+        <text class="a6bL" x="345" y="130" text-anchor="middle">open</text>
+        <text class="a6bL" x="345" y="144" text-anchor="middle">paths</text>
+        <rect x="400" y="66" width="80" height="90" rx="8" fill="#FED7AA"></rect>
+        <text class="a6bX" x="440" y="108" text-anchor="middle">7</text>
+        <text class="a6bL" x="440" y="130" text-anchor="middle">cross</text>
+        <text class="a6bL" x="440" y="144" text-anchor="middle">no log</text>
+        <rect x="495" y="66" width="80" height="90" rx="8" fill="#FED7AA"></rect>
+        <text class="a6bX" x="535" y="108" text-anchor="middle">0</text>
+        <text class="a6bL" x="535" y="130" text-anchor="middle">tables</text>
+        <text class="a6bL" x="535" y="144" text-anchor="middle">recoverable</text>
+        <text class="a6bR" x="305" y="182">what "RBAC and a firewall" was hiding</text>
+
+        <rect x="596" y="20" width="270" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="a6bT" x="731" y="42" text-anchor="middle">After: the whole design</text>
+        <rect x="596" y="66" width="80" height="90" rx="8" fill="#7C2D12"></rect>
+        <text class="a6bW" x="636" y="108" text-anchor="middle">1</text>
+        <text class="a6bLw" x="636" y="130" text-anchor="middle">open path,</text>
+        <text class="a6bLw" x="636" y="144" text-anchor="middle">logged</text>
+        <rect x="691" y="66" width="80" height="90" rx="8" fill="#7C2D12"></rect>
+        <text class="a6bW" x="731" y="108" text-anchor="middle">0</text>
+        <text class="a6bLw" x="731" y="130" text-anchor="middle">cross</text>
+        <text class="a6bLw" x="731" y="144" text-anchor="middle">no log</text>
+        <rect x="786" y="66" width="80" height="90" rx="8" fill="#7C2D12"></rect>
+        <text class="a6bW" x="826" y="108" text-anchor="middle">12</text>
+        <text class="a6bLw" x="826" y="130" text-anchor="middle">tables</text>
+        <text class="a6bLw" x="826" y="144" text-anchor="middle">recoverable</text>
+        <text class="a6bM" x="596" y="182">chosen, logged, recoverable</text>
+
+        <line x1="150" y1="196" x2="292" y2="196" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a6bAr)"></line>
+        <text class="a6bM" x="14" y="214">a control list says: 1 more control</text>
+        <line x1="440" y1="196" x2="592" y2="196" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#a6bAr)"></line>
+        <text class="a6bM" x="305" y="214">a control list says:</text>
+        <text class="a6bM" x="305" y="230">8 controls, all green</text>
+        <text class="a6bM" x="596" y="214">the three numbers say: one path,</text>
+        <text class="a6bM" x="596" y="230">the support read, and it is seen</text>
+
+        <rect x="14" y="290" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="a6bN" x="38" y="302">A control count cannot tell the middle state from the right one. Three numbers can, every month.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - 9 / 9 / 0 against 1 / 0 / 12, and the 7 / 7 / 0 a control list called protected.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The three numbers, and why each one is on the page<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Number</th><th>The question it answers</th><th>Ironwood before</th><th>Firewall only</th><th>Ironwood after</th></tr></thead>
+          <tbody>
+            <tr><td>Open paths to the crown jewels</td><td>How many ways in are left</td><td>9</td><td>7</td><td>1</td></tr>
+            <tr><td>Paths that cross no log</td><td>Would we know if one were used</td><td>9</td><td>7</td><td>0</td></tr>
+            <tr><td>Tables recoverable if the admin login is lost</td><td>Does Monday exist</td><td>0 of 12</td><td>0 of 12</td><td>12 of 12</td></tr>
+          </tbody>
+        </table>
+        <p>The second and third numbers exist because two rungs of the ladder move them while the first stands still. Query logging and egress alerting leave the path count at 3 and take unseen paths from 3 to 0. Immutable backups leave the count at 3 and take recoverable tables from 0 to 12. A report with only the first number would show both controls doing nothing, and a report with only a control count would show them as one line each, indistinguishable from the firewall.</p>
+        <p>The firewall column is the reason the report matters. Seven open paths and seven unseen is a bad estate. The questionnaire answer that described it was accurate, approved, and repeated for three years, because nobody had asked for a number that could be compared to anything.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Which number is worst decides what to fund next<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The report is also the budget. Each number, when it is the worst of the three, points at a family of controls and away from the others. Spending on the wrong family is how an estate ends up with an excellent firewall and a dark warehouse.</p>
+        <table class="clean">
+          <thead><tr><th>If the worst number is</th><th>Fund</th><th>What it moves on Ironwood's ladder</th></tr></thead>
+          <tbody>
+            <tr><td>Open paths, high</td><td>Identity first: MFA on every human login, then service-key rotation with expiry</td><td>9 to 6, then 6 to 5. The cheapest reduction on the board</td></tr>
+            <tr><td>Open paths, still high after identity</td><td>The storage and supply-chain doors: private export bucket, pinned and verified dependencies</td><td>5 to 4, then 4 to 3</td></tr>
+            <tr><td>Unseen paths, any number above zero</td><td>Query logging on the crown-jewel tables and egress alerting on external stages, and a person who reads them</td><td>Unseen 3 to 0, paths unchanged</td></tr>
+            <tr><td>Recoverable tables, zero</td><td>Immutable, restore-tested backups, before anything else on the list</td><td>Recoverable 0 to 12, paths unchanged</td></tr>
+            <tr><td>Open paths, a stubborn 3</td><td>Least privilege on the analyst role, and the process that takes grants back</td><td>3 to 1. The last one is the support read, kept and logged</td></tr>
+          </tbody>
+        </table>
+        <p>Recoverable at zero jumps the queue regardless of the other two, because it is the only number that decides whether there is a business to protect after the incident. Everything else is a question of how much is lost; that one is whether anything is left.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The monthly cadence: three lines, one page, same day every month<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The report is worth nothing as a one-off, because the estate changes every month: a new export bucket for a new agency, a contractor's login that stayed, a key that was rotated on paper. The report is a monthly page with three parts, and its value is the diff against last month.</p>
+        <ul>
+          <li><strong>The inventory file, diffed.</strong> Which nodes and edges appeared or disappeared since last month. A new edge with a blank "closed by" cell is the finding, and it is found by a diff rather than by an audit.</li>
+          <li><strong>The three numbers</strong>, with last month's beside them. Paths up by one means somebody opened a door; unseen up by one means a log was switched off or a copy of the data was made somewhere the log does not reach.</li>
+          <li><strong>The date of the last successful restore</strong>, from the immutable copy, of the crown-jewel table, into a place somebody could query. If the date is more than a quarter old, recoverable is reported as unknown, not as 12, because a backup that has not been restored is a hope.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's third monthly page showed paths at 2 rather than 1. The diff showed the new edge: a reporting tool's service account had been granted a role that read customers, for a dashboard that needed three columns of it. Nobody had done anything wrong. The report found it in one line, eleven days after it happened, instead of at the next annual review.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What not to promise<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Never zero paths.</strong> A support agent reads customer records to do the job. That is a path, it cannot be closed without stopping the work, and a report that says zero has either stopped the work or stopped counting insiders. Promise instead that every remaining path is one the business chose to keep, and that every one of them is logged and reviewed.</li>
+          <li><strong>Never "no breach is possible".</strong> Promise the three numbers, their direction of travel, and the date of the last restore. Those are things the estate can deliver every month; the other sentence is a thing no estate has ever delivered.</li>
+          <li><strong>Never a control count as the answer.</strong> "Fourteen of sixteen controls in place" describes a checklist. The firewall-only estate scored well on one, at 7 open paths and 7 unseen. If a questionnaire insists on a control list, attach the three numbers underneath it.</li>
+          <li><strong>Never a recovery time without a restore date.</strong> A recovery objective is a wish until a restore has been done, timed, and written down. Report the date and the duration of the last one, or report that it has not been done.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>The one-page plan and the three-number report</h2>
+      <span class="tag demo">★ 20 min · everyone builds</span>
+    </div>
+    <p class="lede">One page, in plain words, for one estate. If you do not have your own numbers to hand, use Ironwood's and write your own names into the decisions. The page is finished when a stranger could act on it at three in the morning without calling you.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Write the three containment decisions as one sentence each, with the name of who may take them.</strong> Revoke the suspected credential even if it breaks the pipeline; cut egress to external stages and shares; restore from the immutable copy rather than trust the current tables. Each sentence names a role that may act alone and a person who owns the resulting outage. If a sentence needs "consult", it is not finished.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write the notification order for your estate.</strong> The on-call, the data owner, the security lead, then legal and communications, each with a name, a second name for when the first is on holiday, and the time by which they are told. Mark step 4 as the hand-off to the breach-notification duties that the governance side owns, and write that the evidence, not a summary, goes with it.</p>
+      </div>
+      <div class="step">
+        <p><strong>Rewrite your questionnaire's security paragraph as three numbers, with today's values.</strong> Open paths to the crown jewels, paths that cross no log, tables recoverable if the admin login is lost. Take the values from your inventory file. If you cannot produce one of them, write "unknown"; unknown is an honest finding and a control list is not.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write the date of the last restore.</strong> From the immutable copy, of the crown-jewel table, into somewhere a person queried it. If there is no such date, write "never", and put it at the top of the funding list ahead of everything else, because recoverable at zero outranks every other number.</p>
+      </div>
+      <div class="step">
+        <p><strong>Put all of it on one page.</strong> Decisions at the top, notification order beneath, the three numbers with last month's beside them, the restore date at the bottom. Store it with the inventory file, in version control, and put the same day each month in the calendar for the diff. A plan in a slide deck is a picture; a page that is diffed monthly is a control.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Read the page aloud as the on-call at 02:40.</strong> Every place you would hesitate is a sentence that needs a name or a number. Ironwood's first draft had four such places; the fifty-minute call in the story lived in one of them.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Closing the leader track</h2>
+      <span class="tag exercise">45 min</span>
+    </div>
+    <ol>
+      <li>Take the one page to the person whose budget each containment decision costs, and get their name on the sentence. A decision without the owner's name is a request to the on-call to make it alone.</li>
+      <li>Ask legal and communications how they want to be told, and what they need in the first hour to decide on notification. Write their answer into step 4 of the order. The duties themselves are their territory; making sure they are reached is yours.</li>
+      <li>Produce this month's three numbers from your inventory file, and put next month's diff in the calendar. If any number is "unknown", make finding it the first task of the month.</li>
+      <li>Find the date of your last successful restore. If it is older than a quarter or does not exist, schedule one before the next report, and report recoverable as unknown until it has been done.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">Why is "revoke the suspected key even if it breaks the ETL" agreed in advance, with a named owner, rather than decided during the incident?</p>
+      <button class="qopt" type="button">A · Because revoking a key is technically difficult and needs preparation</button>
+      <button class="qopt" type="button">B · Because at 03:00 the argument for waiting always sounds reasonable, and the reads continue for as long as it takes to find an approver</button>
+      <button class="qopt" type="button">C · Because the ETL team must be present to restart the pipeline</button>
+      <p class="qwhy">Ironwood's on-call spent fifty minutes finding somebody to approve a decision that person would have taken in five seconds. The pre-agreed sentence turns a decision into an execution.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Recover is a separate NIST CSF 2.0 function from Respond. On Ironwood's ladder, what makes Recover possible at all?</p>
+      <button class="qopt" type="button">A · A well-run first hour: fast containment means the current tables can be trusted</button>
+      <button class="qopt" type="button">B · The warehouse's time travel, which keeps a history of every table</button>
+      <button class="qopt" type="button">C · The immutable, restore-tested copy the admin login cannot delete; recoverable tables are 0 of 12 without it and 12 with it</button>
+      <p class="qwhy">Time travel goes with the account, so an attacker holding admin deletes it on the way out. Responding well does not create something clean to restore from; only the copy the attacker could not reach does.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">Ironwood's questionnaire said "role-based access and a firewall" for three years. What did the three-number report show about that state?</p>
+      <button class="qopt" type="button">A · 7 open paths, 7 crossing no log, 0 recoverable tables: a control list had called a dark estate protected</button>
+      <button class="qopt" type="button">B · 1 open path, logged: the firewall had closed the doors that mattered</button>
+      <button class="qopt" type="button">C · 9 open paths, because a firewall closes nothing on a data estate</button>
+      <p class="qwhy">The firewall really did close one door, a leaked key used from outside, so 9 became 7. Phishing, the CI runner, the export bucket and both insider paths were untouched, none was logged, and the backups still went with the admin login.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Respond and Recover functions</span>
+        <span class="note">Respond as actions regarding a detected incident, Recover as restoring assets and operations, and why the second depends on a copy the attacker could not reach.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Containment decisions, notification order, evidence preservation</span>
+        <span class="note">The three pre-agreed decisions with owners, the four-step notification chain, and what to keep for the postmortem. Taught as professional norm with the reason.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">The three-number report and what to fund</span>
+        <span class="note">Open paths, unseen paths, recoverable tables from the attack-path bench: 9 / 9 / 0 to 1 / 0 / 12, with 7 / 7 / 0 as the firewall-only state. Monthly cadence and the restore date.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Breach notification law and regulator duties</span>
+        <span class="note">Named as step 4 of the notification order and handed to the data-governance course, where breach response is taught as law and programme.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Immutable, restore-tested backups</span>
+        <span class="note">Assumed from leader session 4. Here they appear as the thing that makes the third containment decision and the Recover function possible.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Forensic attribution and offensive investigation</span>
+        <span class="note">Not covered by design. Evidence is preserved and handed on; who the attacker was and how to pursue them is another discipline.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 6 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Three decisions, pre-agreed</b><span>Revoke the credential even if ETL breaks. Cut egress to external stages. Restore from the immutable copy. One sentence each, with a name.</span></div>
+      <div class="cheat-item"><b>The test of a decision</b><span>One person, alone, at night, no call. "Consult" means it is a meeting, not a decision.</span></div>
+      <div class="cheat-item"><b>Notification order</b><span>On-call, data owner, security lead, then legal and communications within the hour. Step 4 hands regulator and customer duties to governance.</span></div>
+      <div class="cheat-item"><b>Respond is not Recover</b><span>Everyone can Respond. Recover needs a copy the admin login could not delete: 0 of 12 without it, 12 with it.</span></div>
+      <div class="cheat-item"><b>Preserve, do not tidy</b><span>Leave the attacker's objects, snapshot query and login history, copy before you rotate. The postmortem is built from it.</span></div>
+      <div class="cheat-item"><b>Three numbers</b><span>Open paths, paths crossing no log, recoverable tables. Ironwood: 9 / 9 / 0 to 1 / 0 / 12. Firewall only: 7 / 7 / 0.</span></div>
+      <div class="cheat-item"><b>Worst number sets the budget</b><span>Recoverable at zero jumps the queue. Unseen above zero buys logging and a reader. Paths buy identity first.</span></div>
+      <div class="cheat-item"><b>Never promise zero</b><span>Promise that every remaining path is chosen and logged, and give the date of the last restore. Monthly, diffed, one page.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Leader session 6 of 6 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="a5-detect-what-you-cannot-prevent.html">← Leader session 5 · Detect what you cannot prevent</a>
+      <a href="../index.html">All sessions →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

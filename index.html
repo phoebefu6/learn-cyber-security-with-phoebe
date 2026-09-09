@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Fourteen sessions on defending a data estate from the attacker's path inward: the three doors, NIST CSF 2.0, the ATT&amp;CK kill chain on a warehouse, backups as attack surface, and an attack-path bench that counts what is still open. Free, by Phoebe Fu.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Learn Cyber Security with Phoebe">
+<meta property="og:description" content="Nine paths to the customers table, all unseen. Seven controls later: one, the legitimate one, logged.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Learn Cyber Security with Phoebe">
+<meta name="twitter:description" content="Nine paths to the customers table, all unseen. Seven controls later: one, the legitimate one, logged.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Learn Cyber Security with Phoebe</title>
+<link rel="stylesheet" href="assets/style.css?v=1">
+<style>
+
+  .stats-row { display: flex; gap: 2.4rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .stat b { display: block; font-size: 2.1rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .72rem; opacity: .85; text-transform: uppercase; letter-spacing: .09em; font-weight: 600; }
+
+  .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .course-card {
+    border: 1px solid var(--hairline);
+    border-top: 4px solid var(--diff, var(--indigo));
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    position: relative;
+  }
+  .course-card:hover { border-color: var(--indigo-soft); border-top-color: var(--diff, var(--indigo)); box-shadow: 0 8px 28px rgba(124,45,18,.16); transform: translateY(-3px); }
+  .course-card .cicon { font-size: 1.7rem; line-height: 1; }
+  .course-card .cnum { font-size: .72rem; font-weight: 700; color: var(--indigo); text-transform: uppercase; letter-spacing: .1em; }
+  .course-card h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+  .course-card p { font-size: .85rem; color: var(--muted); flex: 1; }
+  .course-card .meta { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+  .diff-legend { display: flex; gap: 1rem; margin-top: 1.6rem; font-size: .74rem; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+  .diff-legend i { display: inline-block; width: .85rem; height: .35rem; border-radius: 999px; margin-right: .35rem; vertical-align: middle; }
+
+  .paths { margin-top: 2.6rem; }
+  .paths h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .3rem; }
+  .paths .plede { color: var(--muted); font-size: .92rem; margin-bottom: .8rem; }
+  .path { display: flex; gap: .55rem; align-items: center; padding: .75rem 0; border-bottom: .5px solid var(--hairline); flex-wrap: wrap; }
+  .path:last-child { border-bottom: none; }
+  .path b { min-width: 15.5rem; font-size: .9rem; }
+  .path .pstep { background: var(--indigo-50); color: var(--indigo); border-radius: 999px; padding: .16rem .68rem; font-weight: 700; font-size: .8rem; text-decoration: none; transition: all .12s ease; }
+  .path .pstep:hover { background: var(--indigo); color: #fff; }
+  .path .parr { color: var(--faint); font-weight: 700; }
+
+  .mm-section { margin-top: 1.6rem; }
+  .mm-section h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .2rem; }
+  .mm-section .mm-lede { color: var(--muted); font-size: .92rem; margin-bottom: .4rem; }
+  .mm-wrap { border: 1px solid var(--hairline); border-radius: var(--radius); background: linear-gradient(180deg,#fff,#FFF7ED); padding: .6rem; overflow-x: auto; }
+  .mm-svg { width: 100%; height: auto; display: block; max-width: 60rem; margin: 0 auto; min-width: 34rem; }
+  .mm-link { cursor: pointer; text-decoration: none; }
+  .mm-node rect { transition: opacity .15s ease, filter .15s ease; }
+  .mm-node text { pointer-events: none; }
+  .mm-link:hover .mm-node rect { filter: brightness(1.06); }
+  .mm-edge { transition: opacity .15s ease; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn with Phoebe · Data Ops &amp; Security</div>
+    <h1>Learn <span class="accent">Cyber Security</span> with Phoebe</h1>
+    <p class="sub">Every breach of a data estate walks a path: from somewhere the attacker already is, through a credential that should not have worked, a bucket that should not have been public or a package that should not have run, to the one table worth the trip. This course teaches defence by drawing that path first. Ironwood, a mid-size retailer, starts with nine open routes to its customers table and a backup that goes with the admin login. Six leader sessions on the attacker's view, the six functions of NIST CSF 2.0, the ATT&amp;CK kill chain through a data stack, why time travel is not a backup, detecting what you cannot prevent, and the first hour. Eight builder sessions that inventory one estate and close the doors one control at a time, ending on a bench that counts what remains and whether anybody would see it used.</p>
+    <div class="stats-row">
+      <div class="stat"><b data-count="14">14</b><span>sessions, two tracks</span></div>
+      <div class="stat"><b data-count="9">9</b><span>paths to the crown jewels, before controls</span></div>
+      <div class="stat"><b data-count="15">15</b><span>ATT&amp;CK tactics, version 19.2</span></div>
+      <div class="stat"><b data-count="1">1</b><span>path left, logged, in the finished design</span></div>
+      <div class="stat"><b data-count="45">45</b><span>min per session</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>Leader track 🛡️ <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· six sessions, no SQL</span></h2>
+      <p class="plede">For whoever funds security and signs the questionnaire. What is worth stealing, which of the six functions get starved, and the three numbers that replace a control count.</p>
+    </div>
+
+    <div class="course-grid">
+      <a class="course-card" href="courses/a1-attackers-view.html" style="--diff:#34D399">
+        <span class="cicon">🎯</span>
+        <span class="cnum">Leader session 1 · start here</span>
+        <h3>The attacker's view of a warehouse</h3>
+        <p>What is worth the trip, the three doors every path goes through, and why a control list coexisted with nine open paths at Ironwood.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span></span>
+      </a>
+      <a class="course-card" href="courses/a2-six-functions.html" style="--diff:#34D399">
+        <span class="cicon">🧭</span>
+        <span class="cnum">Leader session 2</span>
+        <h3>Six functions, one estate</h3>
+        <p>NIST CSF 2.0's Govern, Identify, Protect, Detect, Respond and Recover on a data estate, and why two of the six get no money.</p>
+      </a>
+      <a class="course-card" href="courses/a3-kill-chain.html" style="--diff:#FBBF24">
+        <span class="cicon">⛓️</span>
+        <span class="cnum">Leader session 3</span>
+        <h3>The kill chain through a data stack</h3>
+        <p>ATT&amp;CK version 19.2's fifteen tactics mapped onto warehouse events, and which stages you would actually see.</p>
+      </a>
+      <a class="course-card" href="courses/a4-backups-attack-surface.html" style="--diff:#FBBF24">
+        <span class="cicon">🗄️</span>
+        <span class="cnum">Leader session 4</span>
+        <h3>Backups are attack surface too</h3>
+        <p>Time travel goes with the account. Immutable, restore-tested copies, and the Monday question answered with a date.</p>
+      </a>
+      <a class="course-card" href="courses/a5-detect-what-you-cannot-prevent.html" style="--diff:#FB923C">
+        <span class="cicon">👁️</span>
+        <span class="cnum">Leader session 5</span>
+        <h3>Detect what you cannot prevent</h3>
+        <p>What the audit log sees and misses, the export bucket that never touches the warehouse, and undetected paths from three to zero.</p>
+      </a>
+      <a class="course-card" href="courses/a6-first-hour.html" style="--diff:#FB923C">
+        <span class="cicon">⏱️</span>
+        <span class="cnum">Leader session 6</span>
+        <h3>The first hour, and the report</h3>
+        <p>Containment decisions, who to tell, what to fund, and the questionnaire answer rewritten as three numbers.</p>
+        <span class="meta"><span class="pill amber">the board version</span></span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>Builder track 🔧 <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· eight sessions, one defended graph</span></h2>
+      <p class="plede">One estate, Ironwood's warehouse, inventoried and defended control by control. Session 8 counts every path that remains and every one that crosses no log.</p>
+    </div>
+
+    <div class="course-grid">
+      <a class="course-card" href="courses/b1-attack-surface-inventory.html" style="--diff:#34D399">
+        <span class="cicon">🗺️</span>
+        <span class="cnum">Builder session 1 · start here</span>
+        <h3>Attack-surface inventory of one warehouse</h3>
+        <p>Five lanes, nodes and edges, three doors, and Ironwood's nine baseline paths written down as a file.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span></span>
+      </a>
+      <a class="course-card" href="courses/b2-credential-paths.html" style="--diff:#FBBF24">
+        <span class="cicon">🔑</span>
+        <span class="cnum">Builder session 2</span>
+        <h3>Credential paths</h3>
+        <p>Keys in git history, phished logins, the Friday admin grant. MFA takes nine paths to six; rotation to five.</p>
+      </a>
+      <a class="course-card" href="courses/b3-misconfiguration.html" style="--diff:#FBBF24">
+        <span class="cicon">🪣</span>
+        <span class="cnum">Builder session 3</span>
+        <h3>Misconfiguration</h3>
+        <p>Public buckets, open shares, permissive network policy. The private export bucket takes five paths to four.</p>
+      </a>
+      <a class="course-card" href="courses/b4-supply-chain.html" style="--diff:#FBBF24">
+        <span class="cicon">📦</span>
+        <span class="cnum">Builder session 4</span>
+        <h3>Supply chain in the data stack</h3>
+        <p>Packages, dbt packages, connectors and the CI runner that holds the ETL key. Pinning takes four paths to three.</p>
+      </a>
+      <a class="course-card" href="courses/b5-exfiltration-detection.html" style="--diff:#FB923C">
+        <span class="cicon">📤</span>
+        <span class="cnum">Builder session 5</span>
+        <h3>Exfiltration detection</h3>
+        <p>Query history and egress logs, COPY INTO an external stage, and the alert that makes a read visible without blocking it.</p>
+      </a>
+      <a class="course-card" href="courses/b6-destructive-events.html" style="--diff:#FB923C">
+        <span class="cicon">🧯</span>
+        <span class="cnum">Builder session 6</span>
+        <h3>Destructive events</h3>
+        <p>Immutable backups and restore drills. Recoverable tables from zero to twelve with the path count unchanged.</p>
+      </a>
+      <a class="course-card" href="courses/b7-detection-engineering.html" style="--diff:#F87171">
+        <span class="cicon">🔬</span>
+        <span class="cnum">Builder session 7</span>
+        <h3>Detection engineering</h3>
+        <p>Turning ATT&amp;CK techniques into log queries. Undetected paths from three to zero.</p>
+      </a>
+      <a class="course-card" href="courses/b8-attack-path-bench.html" style="--diff:#F87171">
+        <span class="cicon">🎛️</span>
+        <span class="cnum">Builder session 8</span>
+        <h3>The attack-path bench</h3>
+        <p>Nine paths to one, the firewall that closes one door, and prevention without detection.</p>
+        <span class="meta"><span class="pill amber">🔒 the capstone</span></span>
+      </a>
+    </div>
+
+    <div class="diff-legend">
+      <span><i style="background:#34D399"></i>start here</span>
+      <span><i style="background:#FBBF24"></i>foundations</span>
+      <span><i style="background:#FB923C"></i>hands-on</span>
+      <span><i style="background:#F87171"></i>advanced and capstone</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="paths">
+      <h2>Choose your path 🗺️</h2>
+      <p class="plede">Three doors into the same defended graph. Both tracks start at their own session 1.</p>
+      <div class="path"><b>💼 I fund this and sign the questionnaire</b>
+        <a class="pstep" href="courses/a1-attackers-view.html">L1</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a2-six-functions.html">L2</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a4-backups-attack-surface.html">L4</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a6-first-hour.html">L6</a>
+        <span style="font-size:.82rem;color:var(--muted)">the doors, the six functions, the Monday question, the three numbers</span>
+      </div>
+      <div class="path"><b>🔧 I own the warehouse</b>
+        <a class="pstep" href="courses/b1-attack-surface-inventory.html">B1</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b2-credential-paths.html">B2</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b3-misconfiguration.html">B3</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b6-destructive-events.html">B6</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b8-attack-path-bench.html">B8</a>
+        <span style="font-size:.82rem;color:var(--muted)">the inventory, the two cheapest closures, the backup, then score it</span>
+      </div>
+      <div class="path"><b>🎯 Everything, in order</b>
+        <a class="pstep" href="courses/a1-attackers-view.html">L1</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a3-kill-chain.html">L3</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/a5-detect-what-you-cannot-prevent.html">L5</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b1-attack-surface-inventory.html">B1</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b4-supply-chain.html">B4</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b5-exfiltration-detection.html">B5</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b7-detection-engineering.html">B7</a>
+        <span class="parr">→</span>
+        <a class="pstep" href="courses/b8-attack-path-bench.html">B8</a>
+        <span style="font-size:.82rem;color:var(--muted)">from nine unseen paths to one seen one</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>Your passport 🎫</h2>
+      <p class="plede">Clear all three quiz questions in a session and it gets stamped. Fourteen stamps across both tracks, and they live in this browser only.</p>
+    </div>
+    <div class="pp-strip"></div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>What is real here 🧾</h2>
+      <p class="plede">A course about defence should be exact about which of its own numbers are counted.</p>
+    </div>
+    <table class="clean">
+      <tr><th>Claim</th><th>Status</th></tr>
+      <tr><td>Ironwood's estate</td><td>A written inventory of twelve nodes and the edges an attacker could use, each with the control that closes it or the log that sees it. Visible on the bench as the paths themselves</td></tr>
+      <tr><td>Nine paths, all undetected, backups reachable</td><td>A real path enumeration from the internet and from an insider, with the warehouse-to-table edge role-aware so a path only counts if it arrived through a role that can read the table</td></tr>
+      <tr><td>The ladder: 9, 6, 5, 4, 3, 3, 3, 1</td><td>Computed in the browser as controls remove edges. Logging takes undetected 3 to 0 and immutable backups take recoverable 0 to 12 with the path count unchanged, which is the point of those two rungs</td></tr>
+      <tr><td>Perimeter firewall only: 7 paths, 7 undetected, 0 recoverable</td><td>Arithmetic. The allowlist closes a leaked key used from outside and nothing else</td></tr>
+      <tr><td>The one remaining path</td><td>The insider's own legitimate support session. No control removes it without stopping the work; it is logged</td></tr>
+      <tr><td>Nothing on the bench is modelled</td><td>Every number is a count over the graph. There is no human behaviour to estimate</td></tr>
+      <tr><td>NIST CSF 2.0 and ATT&amp;CK v19.2</td><td>Six functions and their descriptions extracted from the CSF 2.0 PDF (26 February 2024); fifteen tactic IDs and names read from the ATT&amp;CK site, including the v19 split of Defense Evasion into Stealth and Defense Impairment</td></tr>
+      <tr><td>Defensive throughout</td><td>Every page stops at the door, the control and the log. No exploitation steps or tooling anywhere</td></tr>
+      <tr><td>Ironwood</td><td>A fictional mid-size retailer. The paths are ordinary ones; the company is not real</td></tr>
+    </table>
+  </section>
+
+  <section class="section mm-section">
+    <h2>The knowledge map 🧠</h2>
+    <p class="mm-lede">Both tracks at a glance - hover a session to spotlight its concepts, click any node to jump in.</p>
+    <div class="mm-wrap"><div id="mindmap"></div></div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>learn-cyber-security-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span>Pairs with <a href="https://phoebefu6.github.io/learn-data-access-control-with-phoebe/">Data Access Control ↗</a> and <a href="https://phoebefu6.github.io/learn-data-governance-with-phoebe/">Data Governance ↗</a> · source map: <span class="mono">materials/official-course-map.md</span></span>
+  </footer>
+
+</main>
+
+<script>
+window.MINDMAP_DATA = {
+  "title": "Cyber Security\\nfor the data estate",
+  "centerColor": "#431407",
+  "sessions": [
+    {
+      "label": "The attacker's view",
+      "href": "courses/a1-attackers-view.html",
+      "concepts": [
+        {
+          "label": "Three doors",
+          "href": "courses/a1-attackers-view.html"
+        },
+        {
+          "label": "Nine paths",
+          "href": "courses/b8-attack-path-bench.html"
+        },
+        {
+          "label": "Crown jewels",
+          "href": "courses/a1-attackers-view.html"
+        }
+      ]
+    },
+    {
+      "label": "Six functions",
+      "href": "courses/a2-six-functions.html",
+      "concepts": [
+        {
+          "label": "Govern",
+          "href": "courses/a2-six-functions.html"
+        },
+        {
+          "label": "Protect vs Detect",
+          "href": "courses/a2-six-functions.html"
+        },
+        {
+          "label": "Recover",
+          "href": "courses/a4-backups-attack-surface.html"
+        }
+      ]
+    },
+    {
+      "label": "Kill chain",
+      "href": "courses/a3-kill-chain.html",
+      "concepts": [
+        {
+          "label": "15 tactics, v19.2",
+          "href": "courses/a3-kill-chain.html"
+        },
+        {
+          "label": "Collection",
+          "href": "courses/b5-exfiltration-detection.html"
+        },
+        {
+          "label": "Exfiltration",
+          "href": "courses/b5-exfiltration-detection.html"
+        },
+        {
+          "label": "Impact",
+          "href": "courses/b6-destructive-events.html"
+        }
+      ]
+    },
+    {
+      "label": "Backups",
+      "href": "courses/a4-backups-attack-surface.html",
+      "concepts": [
+        {
+          "label": "Time travel is not a backup",
+          "href": "courses/a4-backups-attack-surface.html"
+        },
+        {
+          "label": "Immutable",
+          "href": "courses/b6-destructive-events.html"
+        },
+        {
+          "label": "Restore drill",
+          "href": "courses/b6-destructive-events.html"
+        }
+      ]
+    },
+    {
+      "label": "Detection",
+      "href": "courses/a5-detect-what-you-cannot-prevent.html",
+      "concepts": [
+        {
+          "label": "Query logging",
+          "href": "courses/b7-detection-engineering.html"
+        },
+        {
+          "label": "Egress alerting",
+          "href": "courses/b5-exfiltration-detection.html"
+        },
+        {
+          "label": "The bucket blind spot",
+          "href": "courses/a5-detect-what-you-cannot-prevent.html"
+        }
+      ]
+    },
+    {
+      "label": "The first hour",
+      "href": "courses/a6-first-hour.html",
+      "concepts": [
+        {
+          "label": "Containment",
+          "href": "courses/a6-first-hour.html"
+        },
+        {
+          "label": "Who to tell",
+          "href": "courses/a6-first-hour.html"
+        }
+      ]
+    },
+    {
+      "label": "Inventory",
+      "href": "courses/b1-attack-surface-inventory.html",
+      "concepts": [
+        {
+          "label": "Five lanes",
+          "href": "courses/b1-attack-surface-inventory.html"
+        },
+        {
+          "label": "Nodes and edges",
+          "href": "courses/b1-attack-surface-inventory.html"
+        }
+      ]
+    },
+    {
+      "label": "Closing doors",
+      "href": "courses/b2-credential-paths.html",
+      "concepts": [
+        {
+          "label": "MFA 9 to 6",
+          "href": "courses/b2-credential-paths.html"
+        },
+        {
+          "label": "Rotation 6 to 5",
+          "href": "courses/b2-credential-paths.html"
+        },
+        {
+          "label": "Private bucket 5 to 4",
+          "href": "courses/b3-misconfiguration.html"
+        },
+        {
+          "label": "Pinning 4 to 3",
+          "href": "courses/b4-supply-chain.html"
+        }
+      ]
+    },
+    {
+      "label": "The bench",
+      "href": "courses/b8-attack-path-bench.html",
+      "concepts": [
+        {
+          "label": "Unseen 3 to 0",
+          "href": "courses/b8-attack-path-bench.html"
+        },
+        {
+          "label": "Recoverable 0 to 12",
+          "href": "courses/b8-attack-path-bench.html"
+        },
+        {
+          "label": "Firewall only: 7",
+          "href": "courses/b8-attack-path-bench.html"
+        }
+      ]
+    }
+  ]
+};
+</script>
+<script src="assets/app.js?v=1"></script>
+<script src="assets/mindmap.js?v=1"></script>
+</body>
+</html>

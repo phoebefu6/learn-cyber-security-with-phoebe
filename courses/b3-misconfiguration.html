@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Builder session 3 of 8. The doors nobody meant to leave open: a public bucket holding a nightly extract, a share granted wider than intended, a network policy that lets a key work from anywhere. Making Ironwood's export bucket private takes paths from five to four, and that one path is the one no warehouse control can see.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Misconfiguration - learn cyber security with phoebe">
+<meta property="og:description" content="Builder session 3 of 8. A door with no attacker skill required, and the weekly job that finds it before somebody else does.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/b3-misconfiguration.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Misconfiguration - learn cyber security with phoebe">
+<meta name="twitter:description" content="Public buckets, open shares, permissive network policy. Private bucket: five paths to four.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Builder session 3 · Misconfiguration - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Builder session 3 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Builder session 3 of 8</div>
+    <h1>Misconfiguration: the doors <span class="accent">nobody meant to leave open</span></h1>
+    <p class="sub">Two of the three doors into a data estate take work to walk through: a credential has to be stolen, a package has to be poisoned. The third takes nothing. A bucket that lists its contents to anyone, a share granted to an account whose contract ended, a network policy that lets a key authenticate from any address on earth. Nobody attacked Ironwood's export bucket; somebody found it. Tonight is the inventory of those doors, the one control that closes the bucket path, and the weekly job that stops the next one appearing unnoticed.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Core</span>
+      <span class="chip audience">Platform and analytics engineers</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-20 · The doors nobody meant to leave open</span>
+      <span class="a3" style="flex:4">20-40 · Build-along: close the bucket</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where tonight sits on the ladder</h2>
+    </div>
+    <p class="lede">Session 1 drew nine paths to Ironwood's customers table. Session 2 closed three with MFA and one more with key rotation, leaving five. Tonight closes one, and it is the strangest of the nine: the only path that never enters the warehouse. Making the export bucket private takes the count from <strong>five to four</strong>. It is one path on the ladder and the single largest blind spot on the estate, because every other control on the board is a warehouse control and this path never meets one.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A storage-lane inventory of every bucket, stage and share that holds a copy of the crown jewels, with each one's public setting and grantee list written down. Ironwood's export bucket made private without breaking the agency that reads it. A weekly configuration review that diffs the estate against last week, so the next door opened for a vendor is found in seven days rather than two years. And the inventory file's "closed by" column filled for the bucket edge.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why a misconfiguration is a different kind of door<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A credential door needs a stolen thing. A supply-chain door needs code that runs. A misconfiguration door needs a URL. There is no login event, because nothing logged in; there is no query, because nothing queried. The data was simply reachable, and reachable data gets reached.</p>
+        <p>That is why the bench counts the export bucket as a path with no undetected-to-detected transition available: query logging moves eight paths from unseen to seen and leaves this one exactly where it was. The only way to see a bucket being read is a log on the bucket, and the only way to stop it is a setting on the bucket.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's export bucket was created two years ago for a marketing agency that needed a weekly customer extract. The engineer who set it up made it publicly readable because the agency's tool did not support signed requests, ticketed a follow-up to fix that, and left the company four months later. The bucket appeared in no warehouse grant, no access review and no audit log. It appeared in a search engine's index of open storage.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The vocabulary for the storage lane<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Bucket</strong> - an object store container. It has its own access model, separate from the warehouse's, and usually weaker because fewer people look at it.</li>
+          <li><strong>Public access</strong> - two distinct settings: whether an unauthenticated principal can <em>list</em> the objects, and whether it can <em>read</em> them. Listing without reading still tells an attacker the file names and the nightly cadence; reading without listing still works for anyone who has ever seen a URL.</li>
+          <li><strong>External stage</strong> - the warehouse's pointer to a bucket, used to load from it or unload to it. The stage's location is a bucket path, which makes <code class="mono">show stages</code> the fastest way to find buckets the warehouse touches.</li>
+          <li><strong>Share</strong> - a grant of read access on warehouse objects to another account. Its grantee list is a second set of doors, one per account, each of which has its own users and its own hygiene you do not control.</li>
+          <li><strong>Network policy</strong> - the allowlist of addresses a credential is allowed to authenticate from. A missing or wide-open policy is the setting that turns a leaked key into a key usable from anywhere.</li>
+          <li><strong>Configuration drift</strong> - the gap between the setting somebody chose and the setting in force today. Drift is not usually malicious. It is a vendor onboarding that never got its offboarding.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the three misconfiguration shapes and the path the warehouse cannot see</span>
+      <h2>Misconfiguration is a door with no attacker skill required</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">Three shapes cover nearly every misconfiguration on a data estate: a <strong>public bucket</strong> holding a copy of the data, a <strong>share or stage</strong> granted wider than intended, and a <strong>network policy</strong> that lets a credential work from anywhere. Each is a setting someone chose for a reason that made sense that week.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two paths from the internet to the customers table drawn side by side. The upper path goes through a phished analyst login and the warehouse, where query logging, least privilege and MFA all apply. The lower path goes through the public export bucket and its nightly extract straight to the table, never entering the warehouse, so each warehouse control is marked as having no effect. A private-bucket gate closes the lower path, taking paths from five to four.">
+        <style>
+          .b3aT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .b3aH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .b3aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .b3aM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b3aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b3aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b3aAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="b3aRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <text class="b3aM" x="14" y="22">start</text>
+        <text class="b3aM" x="200" y="22">the door</text>
+        <text class="b3aM" x="420" y="22">what it yields</text>
+        <text class="b3aM" x="600" y="22">the estate</text>
+        <text class="b3aM" x="770" y="22">the prize</text>
+
+        <rect x="14" y="160" width="110" height="34" rx="8" fill="#431407"></rect>
+        <text class="b3aT" x="69" y="182" text-anchor="middle">Internet</text>
+
+        <text class="b3aM" x="200" y="54">the warehouse path: eight of nine look like this</text>
+        <rect x="200" y="64" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b3aH" x="275" y="84" text-anchor="middle">phished analyst</text>
+        <rect x="420" y="64" width="140" height="30" rx="7" fill="#FDBA74"></rect>
+        <text class="b3aH" x="490" y="84" text-anchor="middle">analyst login</text>
+        <rect x="600" y="62" width="130" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b3aT" x="665" y="84" text-anchor="middle">Warehouse</text>
+        <rect x="770" y="150" width="96" height="34" rx="8" fill="#431407"></rect>
+        <text class="b3aT" x="818" y="172" text-anchor="middle">customers</text>
+
+        <line x1="126" y1="170" x2="196" y2="84" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b3aAr)"></line>
+        <line x1="352" y1="79" x2="416" y2="79" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b3aAr)"></line>
+        <line x1="562" y1="79" x2="596" y2="79" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b3aAr)"></line>
+        <line x1="732" y1="82" x2="766" y2="160" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b3aAr)"></line>
+
+        <rect x="540" y="108" width="190" height="96" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3aH" x="552" y="126">Warehouse controls</text>
+        <text class="b3aB" x="552" y="146">query logging</text>
+        <text class="b3aR" x="660" y="146">no effect</text>
+        <text class="b3aB" x="552" y="164">least privilege</text>
+        <text class="b3aR" x="660" y="164">no effect</text>
+        <text class="b3aB" x="552" y="182">MFA on logins</text>
+        <text class="b3aR" x="660" y="182">no effect</text>
+        <text class="b3aM" x="552" y="198">on the bucket path below</text>
+
+        <text class="b3aM" x="200" y="235">the bucket path: one of nine, and it never enters the warehouse</text>
+        <rect x="200" y="245" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b3aH" x="275" y="265" text-anchor="middle">public export bucket</text>
+        <rect x="420" y="245" width="140" height="30" rx="7" fill="#FDBA74"></rect>
+        <text class="b3aH" x="490" y="265" text-anchor="middle">nightly extract</text>
+
+        <line x1="126" y1="184" x2="196" y2="256" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b3aRd)"></line>
+        <line x1="352" y1="260" x2="416" y2="260" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b3aRd)"></line>
+        <line x1="562" y1="260" x2="766" y2="180" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b3aRd)"></line>
+        <text class="b3aR" x="580" y="284">a copy of the table, no query, no login</text>
+
+        <rect x="380" y="240" width="8" height="40" rx="2" fill="#431407"></rect>
+        <rect x="300" y="300" width="170" height="30" rx="7" fill="#431407"></rect>
+        <text class="b3aT" x="385" y="320" text-anchor="middle">private bucket: 5 to 4</text>
+        <line x1="385" y1="298" x2="385" y2="282" stroke="#431407" stroke-width="1.5"></line>
+
+        <rect x="14" y="360" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b3aN" x="38" y="372">Eight paths pass through the warehouse and its controls see them. The ninth never enters it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the bucket path beside the warehouse path, and the one gate that closes it.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Shape one: a public bucket holding a copy of the crown jewels<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Ironwood's export bucket holds a nightly extract of the customers table, written by the ETL job for the agency. Two settings on the bucket were wrong: anyone could list the objects, and anyone could read them. The first tells a stranger that a file called <code class="mono">customers_2026-09-07.csv</code> exists and that a new one arrives every night. The second lets them download it.</p>
+        <p>On the graph the bucket is two edges: internet to bucket, because it is listable without authentication, and bucket to crown jewels, because the object is the table. Making the bucket private removes both. That is the <strong>5 to 4</strong> rung on the ladder, and the count is one because the path is one; its weight, if the bench weighted by records reached, would be the whole table.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>The extract was 1.9 million rows. The warehouse's access review listed 41 grants on the customers table, every one of them justified. Not one of them was the door, because the door was not a grant.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Shapes two and three: the wide share and the open network policy<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>A share granted wider than intended.</strong> Ironwood shares a sales summary with a partner. The share's grantee list has two accounts on it: the partner, and an agency whose contract ended fourteen months ago. The agency's account is still live, still has users, and still reads the share on a schedule nobody at Ironwood set. An external stage has the same shape from the other side: its location is a bucket, and whoever can write to that bucket can put objects where the warehouse will load them.</p>
+        <p><strong>A network policy that allows everywhere.</strong> The ETL service key authenticates from any address. Session 2 rotated it, so the copy in git history no longer works. The current key still works from anywhere, which means a future leak is a full door again. An allowlist that restricts the key to the pipeline's own address range turns that future leak into a refused login. It closes exactly one edge on the graph, the service key to the warehouse when used from outside, and it is the one edge the "perimeter firewall only" over-correction actually closes.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why no warehouse control can touch the bucket path<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Eight of the nine paths pass through the warehouse. A query log on the customers table sees all eight; least privilege narrows what several of them can read; MFA removes the three that start with a phished human. The ninth reads a file from a bucket. It never authenticates to the warehouse, never runs a query, never uses a role. So no warehouse control, not logging, not least privilege, not MFA, has any effect on it. The bench confirms it: switch on every warehouse control and leave the bucket public, and one unseen path remains that is not the insider.</p>
+        <p>The general rule follows. Every copy of the crown jewels outside the warehouse, every export, share, replica, stage and backup, needs its own inventory row, its own control and its own log. A copy without those three is an open door in a room with no camera, and the warehouse's excellent camera is pointed at a different room.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers configuration review as a scheduled job, default deny, the vendor pattern and the allowlist</span>
+      <h2>Finding them before somebody else does</h2>
+      <span class="tag concept">8 min live</span>
+    </div>
+    <p class="lede">A misconfiguration is a setting, and settings can be listed. The discipline is listing them <strong>every week</strong> and diffing against the previous week, so a new door shows up as a changed line rather than as an incident. An annual audit finds the door in a year; the search engine found Ironwood's in weeks.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The weekly configuration review as a loop of four steps, list, diff against last week, flag, close, run across three lanes: buckets and stages, shares, and network policies. Each cell names what is listed, what counts as a change, what is flagged and how it is closed. An arrow returns from close to list labelled next week.">
+        <style>
+          .b3bT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .b3bH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b3bB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .b3bM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b3bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+        <defs>
+          <marker id="b3bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+        </defs>
+
+        <rect x="190" y="20" width="150" height="34" rx="8" fill="#431407"></rect>
+        <text class="b3bT" x="265" y="42" text-anchor="middle">1 · List</text>
+        <rect x="350" y="20" width="150" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b3bT" x="425" y="42" text-anchor="middle">2 · Diff last week</text>
+        <rect x="510" y="20" width="150" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b3bT" x="585" y="42" text-anchor="middle">3 · Flag</text>
+        <rect x="670" y="20" width="150" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="b3bH" x="745" y="42" text-anchor="middle">4 · Close</text>
+
+        <rect x="14" y="70" width="160" height="66" rx="8" fill="#FED7AA"></rect>
+        <text class="b3bH" x="26" y="98">Buckets and stages</text>
+        <text class="b3bM" x="26" y="116">every copy of the data</text>
+        <rect x="190" y="70" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="202" y="96">public-access flag</text>
+        <text class="b3bB" x="202" y="114">per bucket and stage</text>
+        <rect x="350" y="70" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="362" y="96">new bucket, or flag</text>
+        <text class="b3bB" x="362" y="114">flipped to public</text>
+        <rect x="510" y="70" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="522" y="96">any public bucket</text>
+        <text class="b3bB" x="522" y="114">holding an extract</text>
+        <rect x="670" y="70" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="682" y="96">block public access</text>
+        <text class="b3bB" x="682" y="114">grant the reader</text>
+
+        <rect x="14" y="150" width="160" height="66" rx="8" fill="#FED7AA"></rect>
+        <text class="b3bH" x="26" y="178">Shares</text>
+        <text class="b3bM" x="26" y="196">one door per grantee</text>
+        <rect x="190" y="150" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="202" y="176">grantee list of</text>
+        <text class="b3bB" x="202" y="194">every share</text>
+        <rect x="350" y="150" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="362" y="176">grantee added, or</text>
+        <text class="b3bB" x="362" y="194">share past expiry</text>
+        <rect x="510" y="150" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="522" y="176">grantee no owner</text>
+        <text class="b3bB" x="522" y="194">can vouch for</text>
+        <rect x="670" y="150" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="682" y="176">revoke, or renew</text>
+        <text class="b3bB" x="682" y="194">with a new expiry</text>
+
+        <rect x="14" y="230" width="160" height="66" rx="8" fill="#FED7AA"></rect>
+        <text class="b3bH" x="26" y="258">Network policies</text>
+        <text class="b3bM" x="26" y="276">from where a key works</text>
+        <rect x="190" y="230" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="202" y="256">allowlist of every</text>
+        <text class="b3bB" x="202" y="274">network policy</text>
+        <rect x="350" y="230" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="362" y="256">range widened, or</text>
+        <text class="b3bB" x="362" y="274">policy detached</text>
+        <rect x="510" y="230" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="522" y="256">an account with</text>
+        <text class="b3bB" x="522" y="274">no policy at all</text>
+        <rect x="670" y="230" width="150" height="66" rx="8" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b3bB" x="682" y="256">attach the policy,</text>
+        <text class="b3bB" x="682" y="274">narrow the range</text>
+
+        <line x1="745" y1="300" x2="745" y2="320" stroke="#D9CBC0" stroke-width="1.5"></line>
+        <line x1="745" y1="320" x2="265" y2="320" stroke="#D9CBC0" stroke-width="1.5"></line>
+        <line x1="265" y1="320" x2="265" y2="302" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b3bAr)"></line>
+        <text class="b3bM" x="350" y="336">next week: same job, and this week's snapshot becomes the baseline</text>
+
+        <rect x="14" y="350" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b3bN" x="38" y="362">A weekly review finds the door in seven days. An annual audit finds it in a year, if it is on the list.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - list, diff, flag, close, every week, across three lanes.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Configuration review is a scheduled job, not an annual audit<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The job lists four things: every bucket's public-access setting, every share's grantee list, every stage's location, and every network policy's allowlist. It writes them to a dated file and diffs the file against last week's. A new line is a new object somebody created; a changed line is a setting somebody changed. Both go to a human, with the name of whoever made the change if the platform records it.</p>
+        <p>Two properties make it work. It runs without anyone remembering to run it, so the finding does not depend on the audit calendar. And it compares against last week rather than against a policy document, so it catches the drift the policy never anticipated. A bucket that was private for two years and became public on Tuesday is a one-line diff on Monday.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's first run of the job produced 63 lines: 19 buckets, 7 stages, 4 shares, 33 accounts with a network policy or none. Two lines were public buckets. The second run, a week later, produced a one-line diff: a new stage pointing at a bucket in a different cloud account, created by a contractor for a proof of concept. It was closed the same morning, which is the entire argument for weekly.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Default deny for new storage, and what it costs<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every new bucket starts with public access blocked at the account level, so an individual bucket cannot be made public by a policy statement alone; the block has to be lifted deliberately, by someone with the right to do it, in a change that leaves a record. Every new share starts with an empty grantee list and an expiry date. Every new service account starts attached to a network policy.</p>
+        <p>The cost is real and worth naming. A team that needs a public bucket for a static site has to ask, and the ask takes a day. A vendor onboarding that used to be an afternoon becomes an afternoon plus a ticket. The friction is the control: the day the ask takes is the day somebody writes down why the door exists and when it closes. Ironwood's export bucket had no ticket, because nothing required one.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>"Created for a vendor, never removed", and the expiry rule<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Nearly every misconfiguration on a data estate has the same origin story. A vendor, agency, contractor or partner needed access; somebody granted it in the fastest way that worked; the engagement ended; nobody owned taking it back. The bucket, the share grantee and the wide-open policy are all this story at different lanes.</p>
+        <p>The access-control course sets the expiry rule for grants: every grant to a human or an external party carries a date, and on that date it is revoked unless someone renews it in writing. The same rule applies without change to shares, to bucket grants for external accounts, and to network policy exceptions. An expiry that is written into the inventory turns "never removed" into "removed on the date, or renewed by a named person". The weekly diff then flags any share past its expiry as a changed line, whether or not anyone remembered.</p>
+        <ul>
+          <li><strong>Grant to a named account, never to the public.</strong> The agency has its own cloud account; the bucket grants that account read on the prefix it needs. Nothing anonymous.</li>
+          <li><strong>Write the expiry next to the grant.</strong> In the inventory file, and in the share's comment or the bucket's tags if the platform allows it.</li>
+          <li><strong>Name the owner.</strong> The person who renews or lets it lapse. A grant without an owner is a grant the diff job will flag every week until someone claims it.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The network allowlist: a real control with a small effect on the graph<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>An allowlist on the warehouse says a credential may authenticate only from these addresses. For a service key that is always used by the same pipeline on the same hosts, the allowlist is nearly free and closes a whole class of future incident: the key leaks again, someone tries it from outside, and the login is refused before any query runs.</p>
+        <p>The bench is honest about how much that is worth on its own. The "perimeter firewall only" over-correction is exactly this control with nothing else, and it leaves <strong>7 paths, 7 undetected, 0 recoverable</strong>. It closes one door, the leaked key used from outside. A phished analyst logs in from their own laptop inside the range. The malicious package runs on the CI runner, which is inside the range because it has to be. The export bucket sits outside the warehouse altogether, so the warehouse's allowlist never sees the read. And both insiders were never outside.</p>
+        <p>So the allowlist belongs on the estate, as the third part of the service-account pattern from session 2, and it belongs in the weekly diff so a detached policy is a flagged line. It does not belong at the top of anyone's list of what to buy, and the number that says so is 7.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Close the bucket</h2>
+      <span class="tag demo">★ 20 min · everyone builds</span>
+    </div>
+    <p class="lede">Every command runs against your own estate and your own accounts. The output is three things: a storage-lane inventory with each object's public setting and grantee list, a private export bucket that the agency can still read, and a diff job that runs next Monday without you.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Inventory every bucket, stage and share that touches customers data.</strong> Start from the warehouse side, because the stages tell you which buckets the warehouse reads from and writes to, and the shares tell you which external accounts can read at all. Then go to the cloud side for the buckets the warehouse does not know about, which is where Ironwood's export lived.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · the warehouse side, then the cloud side</span>
+show stages;                        -- every external stage: its location is a bucket path, write each one down
+show shares;                        -- every share, outbound and inbound
+show grants to share &lt;share name&gt;;  -- for each outbound share: the grantee accounts, one door per row
+-- cloud side, your own account only: list every bucket, then for each one read its
+-- public-access configuration and its bucket policy. The command differs per cloud;
+-- the question is the same: can an unauthenticated principal list or read this bucket?
+        </div>
+        <p>The listing command differs between platforms and the shape does not: a list of objects, then one detail call per object. Ironwood found 19 buckets from the cloud side and only 7 stages from the warehouse side. The 12 buckets the warehouse did not know about were the lane nobody had walked.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write each object into the storage lane of the inventory file with its setting.</strong> One line per bucket, stage, share and network policy. The columns that matter are the public flag, the grantee list, the location, the allowlist, what the object holds, and who owns it. A blank owner is a finding on its own.</p>
+        <div class="prompt-box good">
+          <span class="label">★ The storage lane, first pass</span>
+# storage lane, 2026-09-08
+bucket   ironwood-export-agency   public-read: YES  listing: YES  holds: customers extract, nightly  owner: (none found)
+bucket   ironwood-raw-landing     public-read: no   listing: no   holds: raw supplier feeds         owner: platform
+stage    STG_AGENCY_EXPORT        location: ironwood-export-agency/customers/   used by: ETL role
+share    SHR_PARTNER_SALES        grantees: partner_acct, agency_acct (contract ended 2025-07)  expiry: (none)
+policy   NET_ETL                  attached to: etl_service  allowlist: 0.0.0.0/0
+policy   (none)                   attached to: 14 service accounts have no policy
+        </div>
+        <p>Ironwood's first pass had two public buckets, one share with an expired grantee, one policy that allowed everywhere and fourteen accounts with no policy. Six lines, six doors, none of them a grant on the customers table.</p>
+      </div>
+      <div class="step">
+        <p><strong>Make the export bucket private, and confirm the agency's own account still reads it.</strong> Two changes on the bucket, then one grant, then two checks. Block public access at the bucket, remove the public-read statement from the bucket policy, grant the agency's own cloud account read on the prefix it needs, with an expiry written into the inventory. Then read the bucket's access log: the agency's principal succeeds, anonymous requests are refused.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · private, then a named reader</span>
+# on the bucket, your own account (command shape differs per cloud):
+# 1 enable "block all public access" on ironwood-export-agency
+# 2 remove the statement granting read or list to everyone from the bucket policy
+# 3 grant the agency's OWN account read on customers/ only, no list on the rest of the bucket
+# 4 tag the bucket:  owner=marketing-platform  expiry=2027-03-01  purpose=agency weekly extract
+# then confirm from the bucket's access log, not from memory:
+#    agency principal  GET customers/customers_2026-09-08.csv   200
+#    anonymous         GET customers/customers_2026-09-08.csv   403
+#    anonymous         LIST /                                    403
+        </div>
+        <p>The confirmation is the step teams skip. Ironwood's first attempt blocked public access and forgot the grant; the agency's Monday pull failed and the change was reverted by lunchtime, which reopened the door for another week. Grant first, then block, then read the log.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write the weekly diff job.</strong> A snapshot script that emits the storage lane in the same shape as step 2, a diff against last week's snapshot, a grep for the settings that are never acceptable, and a rotation of the baseline. Schedule it for Monday morning, so the diff is on someone's desk when the week starts.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · config-review.sh, runs every Monday 06:00</span>
+#!/bin/sh
+# weekly configuration review: list, diff against last week, flag, rotate the baseline
+set -e
+today=$(date +%F)
+mkdir -p config
+# 1 list: one line per bucket, stage, share and policy, same columns as the inventory's storage lane
+./snapshot-config.sh > "config/$today.txt"
+# 2 diff: every added or changed line is a review item for a human, with the change author if the platform records it
+diff "config/last-week.txt" "config/$today.txt" > "config/$today.diff" || true
+# 3 flag: the settings that are never acceptable, regardless of whether they changed
+grep -E 'public-read: YES|listing: YES|allowlist: 0.0.0.0/0|expiry: \(none\)|owner: \(none' "config/$today.txt" > "config/$today.flags" || true
+# 4 rotate: this week becomes next week's baseline
+cp "config/$today.txt" config/last-week.txt
+# deliver the diff and the flags to the owner rota; an empty diff is a result too, and it gets sent
+        </div>
+        <p><code class="mono">snapshot-config.sh</code> is the step 1 commands with their output reshaped into one line per object. It is the only platform-specific part, and the diff and flag steps never change when you move clouds.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write the share and the policy findings as edges, with their closed-by control.</strong> The expired agency grantee on the share is revoked tonight; the partner's grantee gets an expiry and an owner. The ETL key's network policy is narrowed to the pipeline's range, which is the third part of the service-account pattern from session 2. The fourteen accounts with no policy go on the list for the owner rota; they are not changed tonight, because a wrong allowlist is an outage.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now · the share and the policy</span>
+-- the expired grantee: revoke tonight, the contract ended fourteen months ago
+alter share SHR_PARTNER_SALES remove accounts = agency_acct;
+-- the partner stays, with an expiry and an owner written where the diff job will read them
+comment on share SHR_PARTNER_SALES is 'owner=sales-platform expiry=2027-01-31 grantee=partner_acct';
+-- the ETL key: allowed only from the pipeline's own range; syntax differs by warehouse, the shape is a list of ranges
+create or replace network policy NET_ETL allowed_ip_list = ('&lt;pipeline range, placeholder&gt;');
+alter user etl_service set network_policy = NET_ETL;
+-- then confirm from the login history that the pipeline's next run authenticated, before touching any other account
+        </div>
+      </div>
+      <div class="step">
+        <p><strong>Update the inventory file's "closed by" column for the bucket edge, with the date.</strong> Two edges close tonight, the same two the bench removes when the private-bucket control is on. Write the agency's named grant and its expiry into the same cell, so next year's reader knows why the bucket still exists.</p>
+        <div class="prompt-box good">
+          <span class="label">★ The inventory file after tonight</span>
+# from            -> to               | the move                                   | closed by                                                  | seen by
+internet          -> bucket_export    | bucket listable without auth               | private bucket, public access blocked, 2026-09-08          | bucket access log (session 5)
+bucket_export     -> crown            | nightly extract of the table               | private bucket; agency reads by named account, expiry 2027-03-01 | bucket access log (session 5)
+svc_key           -> warehouse        | key authenticates from anywhere            | network policy NET_ETL, pipeline range only, 2026-09-08    | login history
+internet          -> ci_runner        | malicious package in the build             | pinned dependencies (session 4)                            |
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>The bucket now has a control. It does not yet have a log anyone reads.</strong> The "seen by" cell says "bucket access log", and tonight that log exists and nobody looks at it. Session 5 wires bucket reads and external-stage unloads into the same alerting as the query log, which is the step that turns a copy outside the warehouse from "closed" into "closed and watched".</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 4</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Finish the storage lane for one warehouse: every bucket from the cloud side, every stage and share from the warehouse side, each with its public flag, grantee list, location, owner and expiry. Count the blanks in the owner column; that number is the finding.</li>
+      <li>Make every bucket that holds a copy of the crown jewels private, in the order grant first, block second, read the access log third. One bucket per day, and never on a Friday.</li>
+      <li>Schedule the weekly diff job and send yourself the first diff. Read it. If it is empty, that is a result; if the job did not run, that is the finding.</li>
+      <li>Write an expiry and an owner against every share grantee and every external-account bucket grant. Take the ones nobody will claim to whoever runs access review, as a list, not as a revocation.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">Query logging is switched on for every table, least privilege is enforced, every human has MFA. Ironwood's export bucket is still public. Why does the bench still show one unseen path that is not the insider?</p>
+      <button class="qopt" type="button">A · Because the bucket is read through the ETL service key, which MFA does not cover</button>
+      <button class="qopt" type="button">B · Because the bucket path never touches the warehouse: no login, no query, no role, so no warehouse control can close it or see it</button>
+      <button class="qopt" type="button">C · Because query logging only covers the analyst role and the extract is written by the admin</button>
+      <p class="qwhy">The extract is a file. Reading it is a request to the bucket, not to the warehouse, so the warehouse's log, grants and second factor are pointed at a different room. The bucket needs its own control and its own log.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">The marketing agency still needs its weekly extract. What is the right shape for closing the bucket?</p>
+      <button class="qopt" type="button">A · Leave the bucket public but rename the files so they are harder to guess</button>
+      <button class="qopt" type="button">B · Block public access and stop the extract; the agency can request data by email</button>
+      <button class="qopt" type="button">C · Grant the agency's own account read on the prefix it needs with a written expiry and owner, then block public access, then confirm from the access log</button>
+      <p class="qwhy">Grant first, block second, log third. A named grant with an expiry is a door with an owner and a closing date; an unguessable name is still a public door, and stopping the extract gets the change reverted by lunchtime.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">A network allowlist on the warehouse, on its own, leaves seven of nine paths open. Why does it still belong on the estate?</p>
+      <button class="qopt" type="button">A · Because it turns the next leaked service key into a refused login instead of a full door, at almost no cost, as one part of the service-account pattern</button>
+      <button class="qopt" type="button">B · Because it blocks the public export bucket from being read outside the office</button>
+      <button class="qopt" type="button">C · Because it stops phished users, who are by definition outside the perimeter</button>
+      <p class="qwhy">The allowlist closes exactly one door: a leaked key used from outside the range. It cannot see a bucket that sits outside the warehouse, and a phished user logs in from their own laptop inside the range. Small effect, real effect, and never the first purchase.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Protect function, configuration of platform and storage</span>
+        <span class="note">Safeguards to manage cybersecurity risk are used: public-access blocks, share grantee control, network policies, and a scheduled review that keeps them in force.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">The misconfiguration door on the attack graph</span>
+        <span class="note">Public buckets, open shares, permissive network policy; the private bucket as the 5 to 4 rung, and why it is the one path no warehouse control reaches.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Configuration review as a scheduled diff</span>
+        <span class="note">List, diff against last week, flag, close; default deny for new storage and the friction it costs.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Grant expiry and access review</span>
+        <span class="note">The rule is the access-control course's. Applied here to shares and external bucket grants without change.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Watching the bucket: access logs and egress alerting</span>
+        <span class="note">The bucket's log exists after tonight; session 5 makes somebody read it.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Network engineering beyond allowlists</span>
+        <span class="note">Not covered by design. The allowlist appears as one setting in one lane of the inventory.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 3 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Three shapes</b><span>Public bucket holding a copy, share or stage granted too wide, network policy that allows everywhere.</span></div>
+      <div class="cheat-item"><b>Private bucket: 5 to 4</b><span>One path on the ladder, and the only one that never enters the warehouse.</span></div>
+      <div class="cheat-item"><b>Warehouse controls cannot see it</b><span>No login, no query, no role. Logging, least privilege and MFA all have no effect on the bucket path.</span></div>
+      <div class="cheat-item"><b>Own row, own control, own log</b><span>Every copy of the crown jewels outside the warehouse: exports, shares, stages, replicas, backups.</span></div>
+      <div class="cheat-item"><b>Grant, block, log</b><span>Named account with an expiry first, public access blocked second, access log read third. Never the other order.</span></div>
+      <div class="cheat-item"><b>Weekly diff, not annual audit</b><span>List every setting, diff against last week, flag what is never acceptable, rotate the baseline.</span></div>
+      <div class="cheat-item"><b>Created for a vendor, never removed</b><span>Every external grant carries an expiry and an owner, or the diff job flags it every week.</span></div>
+      <div class="cheat-item"><b>Allowlist: real, small</b><span>Closes one door, the leaked key used from outside. On its own: 7 paths, 7 unseen, 0 recoverable.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Builder session 3 of 8 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="b2-credential-paths.html">← Builder session 2 · Credential paths</a>
+      <a href="b4-supply-chain.html">Builder session 4 · Supply chain →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

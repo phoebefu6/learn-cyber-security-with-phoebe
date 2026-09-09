@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Builder session 1 of 8. Everything an attacker can touch in one warehouse, written down as nodes and edges: accounts, keys, buckets, exports, runners and the paths between them. Nine routes to the customers table before a single control is on.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="Attack-surface inventory of one warehouse - learn cyber security with phoebe">
+<meta property="og:description" content="Builder session 1 of 8. The inventory is the whole defence: you cannot close a door you have not listed.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/b1-attack-surface-inventory.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Attack-surface inventory of one warehouse - learn cyber security with phoebe">
+<meta name="twitter:description" content="Nine routes to the customers table, three doors, and the inventory that makes them countable.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Builder session 1 · Attack-surface inventory of one warehouse - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Builder session 1 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Builder session 1 of 8</div>
+    <h1>Attack-surface inventory of <span class="accent">one warehouse</span></h1>
+    <p class="sub">Every breach of a data estate walks a path: from somewhere the attacker already is, through something they can reach, to the table that was worth the trip. You cannot close a path you have not drawn. Tonight is the least glamorous and most valuable hour in the track: listing every account, key, bucket, export and runner that touches one warehouse, and writing down which can reach which. By the end you have a graph with nine routes to the customers table on it, and seven sessions to close eight of them.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Foundational</span>
+      <span class="chip audience">Platform and analytics engineers</span>
+      <span class="chip audience">Anyone who owns a service account</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-22 · Nodes, edges, three doors</span>
+      <span class="a3" style="flex:4">22-40 · Build-along: draw your estate</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>How the builder track works</h2>
+    </div>
+    <p class="lede">Eight sessions, 45 minutes each, one artifact: a <strong>defended graph</strong> of one real data estate. Tonight the inventory. Then credential paths in session 2, misconfiguration in session 3, the supply chain in session 4, exfiltration detection in session 5, destructive events and backups in session 6, detection engineering in session 7, and in session 8 the whole set is scored by counting the paths that remain open and how many of them nobody would see. The estate throughout is <strong>Ironwood</strong>, a mid-size retailer whose warehouse holds a customers table that is worth stealing and a backup that is worth destroying.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A node-and-edge inventory of one warehouse that fits on a page. The three doors every path goes through, which turns an endless list of threats into three things to check. And the uncomfortable count: before any control is switched on, Ironwood has nine distinct routes to its customers table, and its backups go with the admin login.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why a graph and not a checklist<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A checklist says whether a control is on. A graph says whether it mattered. MFA on every human login is a fine line on a checklist; on Ironwood's graph it removes three of nine paths and leaves six, which is the number a leader needs and the checklist cannot give.</p>
+        <p>The graph also makes the two failure modes of security spending visible. Closing doors nobody uses (paths that did not exist) and closing doors while leaving the room dark (paths that remain and cross no logged edge). Session 8 puts numbers on both, and the numbers only exist because tonight's inventory does.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's platform team had a 40-item hardening checklist, 31 items green. The path that mattered was not on it: a service key committed to a public repository two years earlier, still valid, authenticating from anywhere. No checklist item said "count the keys in git history", because whoever wrote the list had never met that door.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The vocabulary for the whole track<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Node</strong> - anything an attacker can be, hold or reach: a starting position, a credential, an asset, the target.</li>
+          <li><strong>Edge</strong> - one move: a phished password, a key read from a repo, a SELECT with a broad role. Every edge is closed by a specific control or seen by a specific log, and knowing which is the whole design.</li>
+          <li><strong>Crown jewels</strong> - the small number of tables whose loss is the incident. At Ironwood it is one table. Most estates have two or three.</li>
+          <li><strong>Path</strong> - a chain of edges from a starting point to the crown jewels. Session 8 counts them.</li>
+          <li><strong>Undetected path</strong> - a path that crosses no logged edge. The attacker completes it and nobody knows.</li>
+          <li><strong>Recoverable</strong> - whether an attacker who reaches the admin login can also destroy the copy you would restore from. Time travel and snapshots go with the account; a backup the account cannot delete does not.</li>
+          <li><strong>Tactic</strong> - MITRE ATT&amp;CK's word for the attacker's goal at one stage: initial access, credential access, exfiltration, impact. Session 3 maps the fifteen of them onto a warehouse.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the five categories of node and where to find each</span>
+      <h2>Everything an attacker can touch, in five lanes</h2>
+      <span class="tag concept">9 min live</span>
+    </div>
+    <p class="lede">The inventory is not long. Five categories cover a warehouse estate, and each has a place you go to enumerate it. The discipline is doing all five, because the door is always in the lane somebody skipped.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Five lanes of attack surface for a warehouse estate: identities, credentials, storage, compute and code, and network paths. Each lane names its examples and the command or place used to enumerate it.">
+        <style>
+          .b1aT { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .b1aH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b1aB { font: 400 11px Inter, sans-serif; fill: #1C1210; }
+          .b1aM { font: 400 11px Inter, sans-serif; fill: #6B5A50; }
+          .b1aQ { font: 600 11px "SFMono-Regular", Menlo, monospace; fill: #2A1208; }
+          .b1aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+        </style>
+
+        <rect x="14" y="20" width="160" height="34" rx="8" fill="#431407"></rect>
+        <text class="b1aT" x="94" y="42" text-anchor="middle">Identities</text>
+        <rect x="14" y="60" width="160" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b1aB" x="26" y="84">humans and their roles</text>
+        <text class="b1aB" x="26" y="102">service accounts</text>
+        <text class="b1aB" x="26" y="120">the two admins</text>
+        <text class="b1aB" x="26" y="138">the contractor</text>
+        <text class="b1aQ" x="26" y="176">show users</text>
+        <text class="b1aQ" x="26" y="194">show grants to</text>
+        <text class="b1aM" x="26" y="232">who exists, and</text>
+        <text class="b1aM" x="26" y="248">what each can reach</text>
+
+        <rect x="188" y="20" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b1aT" x="268" y="42" text-anchor="middle">Credentials</text>
+        <rect x="188" y="60" width="160" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b1aB" x="200" y="84">keys in repo history</text>
+        <text class="b1aB" x="200" y="102">CI environment vars</text>
+        <text class="b1aB" x="200" y="120">laptop config files</text>
+        <text class="b1aB" x="200" y="138">shared passwords</text>
+        <text class="b1aQ" x="200" y="176">git log -p | grep</text>
+        <text class="b1aQ" x="200" y="194">secret scanner</text>
+        <text class="b1aM" x="200" y="232">where a key lives,</text>
+        <text class="b1aM" x="200" y="248">not where it should</text>
+
+        <rect x="362" y="20" width="160" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b1aT" x="442" y="42" text-anchor="middle">Storage</text>
+        <rect x="362" y="60" width="160" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b1aB" x="374" y="84">object buckets</text>
+        <text class="b1aB" x="374" y="102">external stages</text>
+        <text class="b1aB" x="374" y="120">shares and exports</text>
+        <text class="b1aB" x="374" y="138">backups, snapshots</text>
+        <text class="b1aQ" x="374" y="176">show stages</text>
+        <text class="b1aQ" x="374" y="194">bucket policy</text>
+        <text class="b1aM" x="374" y="232">every copy of the</text>
+        <text class="b1aM" x="374" y="248">data outside a table</text>
+
+        <rect x="536" y="20" width="160" height="34" rx="8" fill="#FDBA74"></rect>
+        <text class="b1aH" x="616" y="42" text-anchor="middle">Compute and code</text>
+        <rect x="536" y="60" width="160" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b1aB" x="548" y="84">CI runners</text>
+        <text class="b1aB" x="548" y="102">orchestrator workers</text>
+        <text class="b1aB" x="548" y="120">notebooks</text>
+        <text class="b1aB" x="548" y="138">package manifests</text>
+        <text class="b1aQ" x="548" y="176">lockfile diff</text>
+        <text class="b1aQ" x="548" y="194">runner env</text>
+        <text class="b1aM" x="548" y="232">what runs code and</text>
+        <text class="b1aM" x="548" y="248">holds a key to do it</text>
+
+        <rect x="710" y="20" width="156" height="34" rx="8" fill="#FED7AA"></rect>
+        <text class="b1aH" x="788" y="42" text-anchor="middle">Network paths</text>
+        <rect x="710" y="60" width="156" height="220" rx="10" fill="#FFF7ED" stroke="#FED7AA"></rect>
+        <text class="b1aB" x="722" y="84">allowlists</text>
+        <text class="b1aB" x="722" y="102">private links</text>
+        <text class="b1aB" x="722" y="120">public endpoints</text>
+        <text class="b1aB" x="722" y="138">egress routes</text>
+        <text class="b1aQ" x="722" y="176">network policy</text>
+        <text class="b1aQ" x="722" y="194">egress rules</text>
+        <text class="b1aM" x="722" y="232">from where a key</text>
+        <text class="b1aM" x="722" y="248">is allowed to work</text>
+
+        <rect x="14" y="320" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b1aN" x="38" y="332">Five lanes, one page. The door is always in the lane that got skipped.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - five lanes, and the place you go to enumerate each.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Identities and credentials are different lanes on purpose<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>An identity is who the warehouse thinks is asking. A credential is the thing that proves it. The two drift apart constantly: one identity with four active keys, three of which nobody can account for; one key that three pipelines share; a human account that a script has quietly used for a year.</p>
+        <p>Enumerating identities tells you the shape of access. Enumerating credentials tells you where the doors actually are, and it is the lane teams skip because it means reading git history and CI configuration rather than running a query.</p>
+        <div class="prompt-box good">
+          <span class="label">★ Try it now</span>
+show users;
+show grants to user etl_service;
+-- then, outside the warehouse, the lane that finds the real doors:
+git log -p --all | grep -iE 'password|secret|api[_-]?key|BEGIN (RSA|EC) PRIVATE' | head
+        </div>
+        <p>The third command is the one that found Ironwood's two-year-old key. It is not clever. It is the lane nobody had walked.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Storage: every copy of the data that is not a table<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The warehouse has grants, policies and an audit log. The nightly extract of the same table sitting in an object bucket has whatever the bucket has, which at Ironwood was a listing anybody with the URL could read. Every export, share, external stage and backup is a second copy of the crown jewels with its own, usually weaker, set of doors.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's marketing agency needed a weekly customer extract. Somebody set up a bucket, made it readable so the agency's tool could pull it, and moved on. The bucket appears nowhere in the warehouse's grants because it is not in the warehouse. On the graph it is a two-hop path from the internet to the customers table that crosses no query log at all.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Compute, code and network: the lanes that hold keys and decide where keys work<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>CI runners and orchestrator workers</strong> run somebody else's code with your key in their environment. A malicious package in the build is a path to the key, which is a path to the warehouse. Session 4.</li>
+          <li><strong>Notebooks</strong> are the credential lane's favourite hiding place and the compute lane's least governed member. Inventory them as both.</li>
+          <li><strong>Package manifests and lockfiles</strong> are the supply-chain inventory. If you cannot say which version of which connector ran last night, that is a finding, not a gap in the exercise.</li>
+          <li><strong>Network paths</strong> decide from where a credential is usable. A leaked key that only authenticates from your own address range is a much smaller door than one that works from anywhere. This lane is what the "perimeter firewall only" over-correction in session 8 gets right, and it closes exactly one of nine paths.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2 ============ -->
+  <section class="section" id="part-2">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the three doors and the Ironwood graph</span>
+      <h2>Three doors, nine paths</h2>
+      <span class="tag concept">8 min live</span>
+    </div>
+    <p class="lede">Every path into a data estate goes through one of three doors: a <strong>credential</strong> that should not have worked, a <strong>misconfiguration</strong> that exposed something directly, or a <strong>supply chain</strong> component that ran with your permissions. Naming the door tells you which session's control closes it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Ironwood attack graph: from the internet and from an insider, through a public repo, a phished analyst login, a phished admin login, a CI runner and a public export bucket, into the ETL service key or a login, then the warehouse, then the customers table. The admin login also reaches the backups. Nine paths reach the table before any control is on.">
+        <style>
+          .b1bT { font: 800 11px Inter, sans-serif; fill: #fff; }
+          .b1bH { font: 800 11px Inter, sans-serif; fill: #1C1210; }
+          .b1bM { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b1bN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b1bR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+        </style>
+        <defs>
+          <marker id="b1bAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D9CBC0"></path></marker>
+          <marker id="b1bRd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#991B1B"></path></marker>
+        </defs>
+
+        <text class="b1bM" x="14" y="22">start</text>
+        <text class="b1bM" x="200" y="22">the door</text>
+        <text class="b1bM" x="420" y="22">what it yields</text>
+        <text class="b1bM" x="600" y="22">the estate</text>
+        <text class="b1bM" x="770" y="22">the prize</text>
+
+        <rect x="14" y="120" width="110" height="34" rx="8" fill="#431407"></rect>
+        <text class="b1bT" x="69" y="142" text-anchor="middle">Internet</text>
+        <rect x="14" y="300" width="110" height="34" rx="8" fill="#431407"></rect>
+        <text class="b1bT" x="69" y="322" text-anchor="middle">Insider</text>
+
+        <rect x="200" y="40" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b1bH" x="275" y="60" text-anchor="middle">public repo</text>
+        <rect x="200" y="86" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b1bH" x="275" y="106" text-anchor="middle">phished analyst</text>
+        <rect x="200" y="132" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b1bH" x="275" y="152" text-anchor="middle">phished admin</text>
+        <rect x="200" y="178" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b1bH" x="275" y="198" text-anchor="middle">CI runner</text>
+        <rect x="200" y="224" width="150" height="30" rx="7" fill="#FED7AA"></rect>
+        <text class="b1bH" x="275" y="244" text-anchor="middle">public export bucket</text>
+
+        <line x1="126" y1="132" x2="196" y2="57" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="126" y1="136" x2="196" y2="102" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="126" y1="140" x2="196" y2="147" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="126" y1="144" x2="196" y2="192" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="126" y1="148" x2="196" y2="238" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+
+        <rect x="420" y="56" width="140" height="30" rx="7" fill="#FDBA74"></rect>
+        <text class="b1bH" x="490" y="76" text-anchor="middle">ETL service key</text>
+        <rect x="420" y="102" width="140" height="30" rx="7" fill="#FDBA74"></rect>
+        <text class="b1bH" x="490" y="122" text-anchor="middle">analyst login</text>
+        <rect x="420" y="148" width="140" height="30" rx="7" fill="#FDBA74"></rect>
+        <text class="b1bH" x="490" y="168" text-anchor="middle">admin login</text>
+
+        <line x1="352" y1="55" x2="416" y2="69" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="352" y1="101" x2="416" y2="115" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="352" y1="147" x2="416" y2="161" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="352" y1="193" x2="416" y2="75" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="490" y1="134" x2="490" y2="146" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b1bRd)"></line>
+        <text class="b1bR" x="566" y="142">Friday admin grant</text>
+
+        <rect x="600" y="102" width="130" height="34" rx="8" fill="#7C2D12"></rect>
+        <text class="b1bT" x="665" y="124" text-anchor="middle">Warehouse</text>
+        <line x1="562" y1="71" x2="596" y2="112" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="562" y1="117" x2="596" y2="119" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="562" y1="163" x2="596" y2="126" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="126" y1="312" x2="596" y2="130" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="126" y1="308" x2="416" y2="124" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+
+        <rect x="770" y="102" width="96" height="34" rx="8" fill="#431407"></rect>
+        <text class="b1bT" x="818" y="124" text-anchor="middle">customers</text>
+        <line x1="732" y1="119" x2="766" y2="119" stroke="#D9CBC0" stroke-width="1.5" marker-end="url(#b1bAr)"></line>
+        <line x1="352" y1="239" x2="766" y2="128" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b1bRd)"></line>
+        <text class="b1bR" x="440" y="262">extract of the table, no query log</text>
+
+        <rect x="770" y="200" width="96" height="34" rx="8" fill="#FED7AA"></rect>
+        <text class="b1bH" x="818" y="222" text-anchor="middle">backups</text>
+        <line x1="562" y1="170" x2="766" y2="212" stroke="#991B1B" stroke-width="1.5" marker-end="url(#b1bRd)"></line>
+        <text class="b1bR" x="610" y="240">drop and purge</text>
+
+        <rect x="14" y="360" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b1bN" x="38" y="372">Nine paths reach customers. The admin login also reaches the backups. Nothing is logged yet.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - Ironwood before any control: nine paths, all unseen, backups included.</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Which door each path uses, and which session closes it<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Path</th><th>Door</th><th>Closed by</th><th>Seen by</th></tr></thead>
+          <tbody>
+            <tr><td>Internet, public repo, ETL key, warehouse</td><td>Credential</td><td>Key rotation (session 2)</td><td>Query logging (session 7)</td></tr>
+            <tr><td>Internet, phished analyst, warehouse</td><td>Credential</td><td>MFA (session 2)</td><td>Query logging</td></tr>
+            <tr><td>Internet, phished analyst, admin role, warehouse</td><td>Credential, then privilege</td><td>MFA, or least privilege</td><td>Query logging</td></tr>
+            <tr><td>Internet, phished admin, warehouse</td><td>Credential</td><td>MFA</td><td>Query logging</td></tr>
+            <tr><td>Internet, CI runner, ETL key, warehouse</td><td>Supply chain</td><td>Pinned dependencies (session 4)</td><td>Query logging</td></tr>
+            <tr><td>Internet, public export bucket, table</td><td>Misconfiguration</td><td>Private bucket (session 3)</td><td>Nothing in the warehouse sees it</td></tr>
+            <tr><td>Insider, own login, warehouse</td><td>None - legitimate</td><td>Cannot be closed without stopping the work</td><td>Query logging</td></tr>
+            <tr><td>Insider, own login, admin role, warehouse</td><td>Privilege</td><td>Least privilege (session 2 of the access course)</td><td>Query logging</td></tr>
+            <tr><td>Insider, own legitimate support session</td><td>None - legitimate</td><td>Cannot be closed</td><td>Query logging</td></tr>
+          </tbody>
+        </table>
+        <p>Two rows say "cannot be closed". That is not a gap in the design; it is the reason detection exists. A support agent has to read customer records to do the job. The only defence against that path being misused is that every read is logged and somebody reads the log.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The export bucket is the path the warehouse will never see<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Eight of the nine paths pass through the warehouse, so a query log on the customers table sees all eight. The ninth reads a nightly extract from a bucket. It never touches the warehouse, so no warehouse control - not logging, not least privilege, not MFA - has any effect on it.</p>
+        <p>This is the general lesson of the storage lane: every copy of the crown jewels outside the warehouse needs its own inventory row, its own control and its own log, or it is an open door in a room with no camera. Session 3 closes this one; session 5 covers how you would even notice it being used.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Draw your own estate</h2>
+      <span class="tag demo">★ 18 min · everyone builds</span>
+    </div>
+    <p class="lede">Pick one warehouse and one crown-jewel table. If you have nothing to hand, use Ironwood's inventory above. The output is a text file of nodes and edges, not a diagram; the diagram comes from the file.</p>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Name the crown jewels.</strong> One to three tables whose loss is the incident. If you list ten, you have not decided. Ironwood's is <code class="mono">customers</code>.</p>
+      </div>
+      <div class="step">
+        <p><strong>Walk the five lanes and write a node per thing.</strong> Every human role, every service account, every key you can find, every bucket and stage and share, every runner and worker, every network path. One line each. Expect 15 to 40 nodes for a single warehouse.</p>
+      </div>
+      <div class="step">
+        <p><strong>Write an edge for every move.</strong> For each node ask: what can this reach, and how? "phished password" and "key in repo history" are edges. So is "SELECT with a broad role". Use the attacker's verb, not the architecture's.</p>
+      </div>
+      <div class="step">
+        <p><strong>Add the two starting points.</strong> The internet, and one insider with a real functional role. The insider is not an accusation; it is the shape of half of all real incidents and the reason two of Ironwood's paths cannot be closed.</p>
+      </div>
+      <div class="step">
+        <p><strong>Trace every path to the crown jewels by hand, and to the backups.</strong> Count them. Ironwood has nine to the table and one to the backups. Your number is your baseline, and it is worth writing down before anybody proposes a control.</p>
+      </div>
+      <div class="step">
+        <p><strong>For each edge, name the control that closes it and the log that would see it.</strong> Leave the cell blank where you do not know. Blank cells are the syllabus for sessions 2 to 7; two of Ironwood's edges have a blank in the "closed by" column forever, and that is the honest answer.</p>
+      </div>
+    </div>
+
+    <div class="prompt-box good">
+      <span class="label">★ The inventory file, one edge per line</span>
+# from            -> to               | the move                                   | closed by         | seen by
+internet          -> repo             | public repo holds a committed key          |                   |
+repo              -> svc_key          | key read out of repo history               | key rotation      |
+internet          -> user_analyst     | phished password, no second factor         | mfa               |
+user_analyst      -> admin            | admin role granted on a Friday, never revoked | least privilege |
+internet          -> bucket_export    | bucket listable without auth               | private bucket    |
+bucket_export     -> crown            | nightly extract of the table               | private bucket    | (nothing)
+warehouse         -> crown            | SELECT within a role that must read it     | (cannot)          | query logging
+admin             -> backups          | drop and purge, time travel included       | immutable backups |
+    </div>
+
+    <div class="callout tip">
+      <p><strong>Keep the file next to the policies, in version control.</strong> The inventory is the thing session 8 scores and session 7 checks against reality. A graph in a slide deck is a picture; a file is a control.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Before session 2</h2>
+      <span class="tag exercise">30 min</span>
+    </div>
+    <ol>
+      <li>Finish the inventory file for one warehouse, all five lanes, including the copies of the data that live outside it.</li>
+      <li>Run the git history grep on every repository that has ever deployed to that warehouse. Write down the count, then stop and do nothing else with what you found until session 2 - rotating a key without knowing what depends on it is its own incident.</li>
+      <li>Count your paths to the crown jewels and to the backups. Compare with nine and one.</li>
+      <li>Find out whether your backups can be deleted by the same account that can read the warehouse. The answer is usually yes, and session 6 is about that.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">Ironwood's nightly customer extract sits in a publicly listable bucket. Which warehouse control reduces that path?</p>
+      <button class="qopt" type="button">A · Query logging on the customers table, because the extract is a query</button>
+      <button class="qopt" type="button">B · Least privilege on the analyst role, because the bucket was created by an analyst</button>
+      <button class="qopt" type="button">C · None of them - the path never touches the warehouse, so it needs its own control and its own log</button>
+      <p class="qwhy">The bucket is a second copy of the crown jewels with its own, weaker doors. No warehouse control affects it. Every copy outside the warehouse needs its own inventory row.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">Two of Ironwood's nine paths are marked "cannot be closed". Why is that not a gap in the design?</p>
+      <button class="qopt" type="button">A · They are legitimate reads by people whose job requires them; the defence is that every read is logged and reviewed</button>
+      <button class="qopt" type="button">B · They are low-risk because insiders are trusted</button>
+      <button class="qopt" type="button">C · They will be closed by MFA in session 2</button>
+      <p class="qwhy">A support agent must read customer records. Prevention cannot remove that path without stopping the work, which is exactly why detection exists. The finished design in session 8 has one open path, logged.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">Why are identities and credentials inventoried as separate lanes?</p>
+      <button class="qopt" type="button">A · Because identities are managed by the warehouse and credentials by the network team</button>
+      <button class="qopt" type="button">B · Because one identity can have several credentials in several places, and the doors are where the credentials are, not where the identity is</button>
+      <button class="qopt" type="button">C · Because credentials expire and identities do not</button>
+      <p class="qwhy">Ironwood's two-year-old key belonged to a perfectly ordinary identity. Enumerating users found nothing; enumerating where keys lived found the door.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Identify function</span>
+        <span class="note">Asset inventory as the first outcome. The full six functions and where each lands on a data estate are leader session 2.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Attack-path modelling of a data estate</span>
+        <span class="note">Nodes, edges, starting points, crown jewels, the three doors, and the nine-path baseline scored in session 8.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">MITRE ATT&amp;CK Enterprise tactics</span>
+        <span class="note">Named tonight; leader session 3 maps the fifteen tactics of version 19.2 onto warehouse events.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Grants, roles, row and column policies</span>
+        <span class="note">Assumed, not taught. Those are the access-control course; here they appear only as edges an attacker uses when they are missing.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Attacking models, prompts and agents</span>
+        <span class="note">Not covered by design. Model-side threats belong to the AI red-team course; this is the estate underneath.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 1 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Five lanes</b><span>Identities, credentials, storage, compute and code, network paths. The door is in the lane you skipped.</span></div>
+      <div class="cheat-item"><b>Three doors</b><span>Credential, misconfiguration, supply chain. Every path goes through one.</span></div>
+      <div class="cheat-item"><b>Nine paths</b><span>Ironwood's baseline to the customers table, all unseen. Yours is your baseline.</span></div>
+      <div class="cheat-item"><b>Two cannot be closed</b><span>Legitimate reads. Detection is the defence, not an afterthought.</span></div>
+      <div class="cheat-item"><b>Copies outside the warehouse</b><span>Buckets, shares, exports, backups. Own row, own control, own log.</span></div>
+      <div class="cheat-item"><b>Backups go with the account</b><span>Time travel and snapshots are deleted by whoever holds admin. A copy the account cannot delete is the only backup.</span></div>
+      <div class="cheat-item"><b>Attacker's verb</b><span>Write edges as moves: phished, read from history, SELECT with a broad role.</span></div>
+      <div class="cheat-item"><b>A file, not a slide</b><span>The inventory lives in version control next to the policies.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Builder session 1 of 8 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="../index.html">← All sessions</a>
+      <a href="b2-credential-paths.html">Builder session 2 · Credential paths →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

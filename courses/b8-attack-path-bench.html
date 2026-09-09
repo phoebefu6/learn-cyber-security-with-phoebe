@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- social:start -->
+<meta name="description" content="Builder session 8 of 8. Every open path from the internet and from an insider to the customers table, counted live over Ironwood's estate as you switch controls on. Nine paths become one, the one that cannot be closed, and it is logged.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Learn with Phoebe">
+<meta property="og:title" content="The attack-path bench - learn cyber security with phoebe">
+<meta property="og:description" content="Builder session 8 of 8. Nine paths, three numbers, and the perimeter firewall that closes exactly one door.">
+<meta property="og:url" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/courses/b8-attack-path-bench.html">
+<meta property="og:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The attack-path bench - learn cyber security with phoebe">
+<meta name="twitter:description" content="Nine paths to one. The last one cannot be closed, only seen.">
+<meta name="twitter:image" content="https://phoebefu6.github.io/learn-cyber-security-with-phoebe/assets/og-cover.png">
+<!-- social:end -->
+<title>Builder session 8 · The attack-path bench - learn cyber security with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-cyber-security-with-phoebe</a> / Builder session 8 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Cyber Security with Phoebe · Builder session 8 of 8</div>
+    <h1>The attack-path <span class="accent">bench</span></h1>
+    <p class="sub">Seven sessions of controls, and now the question a board will ask in plainer words: how many ways in are left, would we see any of them used, and if somebody gets the admin login do we still have last night's copy? The bench below holds Ironwood's whole estate as a graph. Switch controls on and it recounts every open path from the internet and from an insider to the customers table, in your browser, and reports three numbers rather than one.</p>
+    <div class="chip-row">
+      <span class="chip level">🔴 Hardest</span>
+      <span class="chip audience">Platform and analytics engineers</span>
+      <span class="chip audience">Whoever answers the security questionnaire</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:3">3-15 · Three numbers, not a score</span>
+      <span class="a3" style="flex:6">15-40 · Build-along: run the ladder</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>What the bench measures</h2>
+    </div>
+    <p class="lede">Security programmes report a control count, and a control count says nothing about whether the doors that matter are closed. The bench reports <strong>open paths to the crown jewels</strong>, <strong>how many of them cross no logged edge</strong>, and <strong>how many tables survive an attacker with the admin login</strong>. Two of the three can move without the first one moving at all, which is the whole reason to report three.</p>
+
+    <div class="legend">
+      <span class="pill">Live = presented in the 45 minutes</span>
+      <span class="pill">Self-study = the full depth, after class</span>
+      <span class="pill">🔍 Every diagram zooms</span>
+    </div>
+
+    <div class="callout win">
+      <p><strong>★ What you walk out with tonight.</strong> A defended graph you have scored path by path instead of asserted. The measured effect of the most popular single purchase, a perimeter firewall, which closes one of nine doors and leaves seven open and unseen. And the honest end state: one path remains, it is the insider's own legitimate read, no control can remove it without stopping the work, and it is logged.</p>
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why the finished design has one path, not zero<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A support agent at Ironwood reads customer records to answer tickets. That is a path from a human to the crown jewels, and every prevention control either leaves it open or stops the tickets. The only defence against it being misused is that every read is recorded and somebody reads the record.</p>
+        <p>So zero is not the target. The target is that every path that remains is one the business chose to keep, and that none of them is dark. A programme that reports zero paths has either stopped the work or stopped counting insiders.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p>Ironwood's questionnaire answer for three years was "customer data is protected by role-based access and a firewall". The graph says that state has seven open paths and no log on any of them. Nobody had lied; nobody had counted.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What is real here<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>The estate</strong> is the inventory from session 1: twelve nodes, the edges an attacker could use, and for each edge the control that closes it or the log that sees it. It is visible on the widget as the paths themselves.</li>
+          <li><strong>The counting</strong> is a real path enumeration over whatever graph remains after your controls, from two starting points. The warehouse-to-table edge is role-specific, so a path only counts if it arrived through a role that can actually read the table.</li>
+          <li><strong>Undetected</strong> means a path that crosses no logged edge. Query logging sees every path through the warehouse; it cannot see the export bucket, which never touches the warehouse.</li>
+          <li><strong>Recoverable</strong> is whether the admin login, if reached, can also reach the backups. Twelve tables, all or nothing, because time travel and snapshots are deleted with the account.</li>
+          <li><strong>Nothing is modelled.</strong> There is no human behaviour to estimate here, unlike the observability bench next door. Every number is a count.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 1 ============ -->
+  <section class="section" id="part-1">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the ladder and the two rungs that move nothing visible</span>
+      <h2>The ladder, with the numbers it actually produces</h2>
+      <span class="tag concept">10 min live</span>
+    </div>
+    <p class="lede">Every row is computed by the bench on this page. Two rows leave the path count untouched and are the most important rows on the table.</p>
+
+    <table class="clean">
+      <thead><tr><th>Controls on</th><th>Paths to crown jewels</th><th>Undetected</th><th>Recoverable tables of 12</th></tr></thead>
+      <tbody>
+        <tr><td>Nothing</td><td>9</td><td>9</td><td>0</td></tr>
+        <tr><td>+ MFA on every human login</td><td>6</td><td>6</td><td>0</td></tr>
+        <tr><td>+ rotate service keys, expire the old ones</td><td>5</td><td>5</td><td>0</td></tr>
+        <tr><td>+ export bucket private</td><td>4</td><td>4</td><td>0</td></tr>
+        <tr><td>+ pinned, verified dependencies</td><td>3</td><td>3</td><td>0</td></tr>
+        <tr><td>+ query logging and egress alerting</td><td>3</td><td><strong>0</strong></td><td>0</td></tr>
+        <tr><td>+ immutable, restore-tested backups</td><td>3</td><td>0</td><td><strong>12</strong></td></tr>
+        <tr><td>+ least privilege on the analyst role</td><td><strong>1</strong></td><td>0</td><td>12</td></tr>
+        <tr><td>Perimeter firewall only</td><td>7</td><td><strong>7</strong></td><td>0</td></tr>
+        <tr><td>All prevention, no detection</td><td>1</td><td><strong>1</strong></td><td>12</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <p><strong>Rows six and seven are the argument for reporting three numbers.</strong> Logging changes nothing about how many ways in exist and everything about whether you would know. Immutable backups change nothing about ways in and everything about whether Monday exists. A control-count report would list both as "one more control"; a path-count report alone would show them doing nothing.</p>
+    </div>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Paths to the crown jewels falling from nine to one across seven controls, with the undetected count falling to zero at the logging rung and recoverable tables jumping to twelve at the backup rung while the path count holds at three. A final bar shows the perimeter-only over-correction at seven paths, all undetected.">
+        <style>
+          .b8aH { font: 800 12px Inter, sans-serif; fill: #1C1210; }
+          .b8aB { font: 400 10px Inter, sans-serif; fill: #6B5A50; }
+          .b8aW { font: 800 12px Inter, sans-serif; fill: #fff; }
+          .b8aN { font: 700 11px Inter, sans-serif; fill: #1C1210; }
+          .b8aR { font: 800 11px Inter, sans-serif; fill: #991B1B; }
+          .b8aG { font: 800 11px Inter, sans-serif; fill: #3A2400; }
+        </style>
+
+        <line x1="40" y1="256" x2="850" y2="256" stroke="#D9CBC0" stroke-width="1.5"></line>
+        <text class="b8aB" x="40" y="274">nothing</text>
+        <text class="b8aB" x="130" y="274">MFA</text>
+        <text class="b8aB" x="220" y="274">rotation</text>
+        <text class="b8aB" x="310" y="274">bucket</text>
+        <text class="b8aB" x="400" y="274">pinning</text>
+        <text class="b8aB" x="490" y="274">logging</text>
+        <text class="b8aB" x="580" y="274">backups</text>
+        <text class="b8aB" x="670" y="274">least priv</text>
+        <text class="b8aB" x="760" y="274">firewall only</text>
+
+        <rect x="40" y="76" width="70" height="180" rx="4" fill="#991B1B"></rect>
+        <text class="b8aW" x="75" y="120" text-anchor="middle">9</text>
+        <text class="b8aH" x="75" y="66" text-anchor="middle">paths</text>
+
+        <rect x="130" y="136" width="70" height="120" rx="4" fill="#991B1B"></rect>
+        <text class="b8aW" x="165" y="180" text-anchor="middle">6</text>
+
+        <rect x="220" y="156" width="70" height="100" rx="4" fill="#991B1B"></rect>
+        <text class="b8aW" x="255" y="200" text-anchor="middle">5</text>
+
+        <rect x="310" y="176" width="70" height="80" rx="4" fill="#991B1B"></rect>
+        <text class="b8aW" x="345" y="220" text-anchor="middle">4</text>
+
+        <rect x="400" y="196" width="70" height="60" rx="4" fill="#991B1B"></rect>
+        <text class="b8aW" x="435" y="232" text-anchor="middle">3</text>
+
+        <rect x="490" y="196" width="70" height="60" rx="4" fill="#7C2D12"></rect>
+        <text class="b8aW" x="525" y="232" text-anchor="middle">3</text>
+        <text class="b8aG" x="525" y="188" text-anchor="middle">unseen 3 to 0</text>
+
+        <rect x="580" y="196" width="70" height="60" rx="4" fill="#7C2D12"></rect>
+        <text class="b8aW" x="615" y="232" text-anchor="middle">3</text>
+        <text class="b8aG" x="615" y="188" text-anchor="middle">recover 0 to 12</text>
+
+        <rect x="670" y="236" width="70" height="20" rx="4" fill="#431407"></rect>
+        <text class="b8aW" x="705" y="251" text-anchor="middle">1</text>
+        <text class="b8aH" x="705" y="228" text-anchor="middle">logged</text>
+
+        <rect x="760" y="116" width="70" height="140" rx="4" fill="#991B1B"></rect>
+        <text class="b8aW" x="795" y="160" text-anchor="middle">7</text>
+        <text class="b8aR" x="795" y="106" text-anchor="middle">7 unseen</text>
+
+        <rect x="40" y="26" width="14" height="14" rx="3" fill="#CA8A04"></rect>
+        <text class="b8aN" x="64" y="38">Two rungs leave the path count alone and change the other two numbers. That is why there are three.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - nine to one, and the firewall that closes one door.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Build-along</span>
+      <h2>Run the ladder yourself</h2>
+      <span class="tag demo">★ 25 min · everyone builds</span>
+    </div>
+    <p class="lede">The bench is live below. Every open path is listed, start to crown jewels; hover a hop for the attacker's move, and red means nobody would see it. Work the steps in order.</p>
+
+    <div data-sec-bench></div>
+
+    <div class="steps">
+      <div class="step">
+        <p><strong>Start from nothing.</strong> Nine paths, nine unseen, zero recoverable tables. Read the list: five from the internet, three from an insider, one through a bucket that never touches the warehouse.</p>
+      </div>
+      <div class="step">
+        <p><strong>Press "identity only".</strong> MFA and key rotation. Nine paths become five: phishing is closed for analysts and admins, the key in git history has expired. This is the cheapest three-path reduction on the board and it is almost always the right first purchase.</p>
+      </div>
+      <div class="step">
+        <p><strong>Add the private bucket, then pinned dependencies.</strong> Five becomes three. Notice which three remain: two insider paths and the analyst who was granted admin on a Friday. Nothing you have done so far touches an account that is supposed to exist.</p>
+      </div>
+      <div class="step">
+        <p><strong>Add query logging and egress alerting.</strong> The path count does not move. Unseen drops from three to zero. Every remaining path now crosses an edge somebody would read about in the morning.</p>
+      </div>
+      <div class="step">
+        <p><strong>Add immutable backups.</strong> Again the path count does not move. Recoverable goes from zero to twelve, because the admin login, however it was reached, can no longer delete the copy you would restore from.</p>
+      </div>
+      <div class="step">
+        <p><strong>Add least privilege.</strong> Three becomes one: the Friday admin grant is gone and the analyst role can no longer read customers with a broad SELECT. The path that stays is the support session, logged. That is the finished design.</p>
+      </div>
+      <div class="step">
+        <p><strong>Now press "nothing on" and tick "perimeter firewall only".</strong> Seven paths, seven unseen, zero recoverable. It really did close a door: a leaked key can no longer authenticate from outside. Phishing walks in through the user's own laptop, the malicious package runs inside, the bucket sits outside the perimeter altogether, and both insiders were never outside it.</p>
+      </div>
+      <div class="step">
+        <p><strong>Finally press "prevention, no detection".</strong> One path, unseen. Every door you could close is closed, and the one legitimate read left is dark. Write down which of the last two states your own estate is closer to.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <p><strong>The number missing from this bench, deliberately.</strong> Every path counts the same, so a path to a marketing extract would score like a path to national IDs. A real scoreboard weights by what the path reaches and by how many records. Add that first when you build your own; it reorders the middle rungs and rescues neither over-correction.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Closing the track</h2>
+      <span class="tag exercise">45 min</span>
+    </div>
+    <ol>
+      <li>Score your own inventory file from session 1 the way the bench does: count paths, count the ones that cross no log, and answer the backup question honestly.</li>
+      <li>For every control you already own, write down which edge it removes or logs. A control that maps to no edge is a line on a checklist and nothing else.</li>
+      <li>Find the path in your estate that no warehouse control can see. There is nearly always an export, a share or a replica. Give it its own log.</li>
+      <li>Rewrite the security paragraph in your customer questionnaire as three numbers. If you cannot, that is the finding.</li>
+    </ol>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions</h2>
+    </div>
+
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">Query logging and egress alerting leave the path count at three. What do they change?</p>
+      <button class="qopt" type="button">A · Nothing measurable; detection is a compliance requirement rather than a control</button>
+      <button class="qopt" type="button">B · Unseen paths go from three to zero: every remaining path now crosses an edge somebody would read about</button>
+      <button class="qopt" type="button">C · They close the insider paths, which prevention cannot reach</button>
+      <p class="qwhy">Detection does not remove a path. It makes using one visible, which is the only defence available for reads the business has chosen to allow.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">A perimeter firewall on its own leaves seven of nine paths open. Which door did it actually close?</p>
+      <button class="qopt" type="button">A · Phishing, because attackers are outside the perimeter</button>
+      <button class="qopt" type="button">B · The public export bucket, because it is now behind the firewall</button>
+      <button class="qopt" type="button">C · A leaked service key used from outside the allowlist; phishing, the CI runner, the bucket and both insiders are unaffected</button>
+      <p class="qwhy">A phished user logs in from their own laptop inside the allowlist, a malicious package runs on your runner, the bucket sits outside the perimeter altogether, and insiders were never outside it.</p>
+    </div>
+
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">Why does the finished design report one open path rather than zero?</p>
+      <button class="qopt" type="button">A · Because a support agent must read customer records to work; that path cannot be closed without stopping the job, so it is logged instead</button>
+      <button class="qopt" type="button">B · Because one control was left off to demonstrate the bench</button>
+      <button class="qopt" type="button">C · Because the graph engine cannot remove insider paths</button>
+      <p class="qwhy">Zero is not the target. A programme that reports zero has either stopped the work or stopped counting insiders. The target is that every remaining path is chosen and none is dark.</p>
+    </div>
+
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Sources covered</span>
+      <h2>What tonight maps to</h2>
+    </div>
+    <div class="covered">
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">NIST CSF 2.0 - Protect, Detect and Recover as separately scored outcomes</span>
+        <span class="note">The three counters map onto three of the six functions, which is why a single control count cannot report them.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill solid">✓</span>
+        <span class="name">Attack-path analysis over a written inventory</span>
+        <span class="note">Path enumeration from two starting points, role-aware edges, the logged-edge definition of undetected, and both over-corrections computed.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill light">◐</span>
+        <span class="name">Weighting paths by what they reach</span>
+        <span class="note">Named as the first extension. Not implemented on this bench.</span>
+      </div>
+      <div class="covered-row">
+        <span class="status pill inkpill">·</span>
+        <span class="name">Grants, policies and secrets hygiene</span>
+        <span class="note">Assumed from the access-control course; they appear here only as edges that exist when they are missing.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Session 8 cheat sheet</h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Three numbers</b><span>Open paths, unseen paths, recoverable tables. Two can move while the first stands still.</span></div>
+      <div class="cheat-item"><b>Identity first</b><span>MFA plus key rotation: nine paths to five, the cheapest reduction on the board.</span></div>
+      <div class="cheat-item"><b>Logging moves unseen, not paths</b><span>Three to zero with the count unchanged.</span></div>
+      <div class="cheat-item"><b>Backups move Monday, not paths</b><span>Zero to twelve recoverable with the count unchanged.</span></div>
+      <div class="cheat-item"><b>One path is the finish</b><span>The legitimate read, logged. Zero means you stopped counting insiders.</span></div>
+      <div class="cheat-item"><b>Firewall only</b><span>Closes one door. Seven paths, all unseen, backups still lost.</span></div>
+      <div class="cheat-item"><b>Prevention without detection</b><span>One path and it is dark. The wrong finished state.</span></div>
+      <div class="cheat-item"><b>Weight by target next</b><span>A path to a marketing extract is not a path to national IDs.</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="wrap">
+    <p>Builder session 8 of 8 · learn-cyber-security-with-phoebe · by Phoebe Fu</p>
+    <nav class="pagenav">
+      <a href="b7-detection-engineering.html">← Builder session 7 · Detection engineering</a>
+      <a href="../index.html">All sessions →</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../assets/app.js?v=1"></script>
+<script src="../assets/sec-live.js?v=1"></script>
+</body>
+</html>
